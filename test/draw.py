@@ -1,26 +1,24 @@
-import sys
 from time import time
 
-sys.path.insert(0, '../../build')
-sys.path.insert(0, '../../../scripts')
-
-from griffig import BoxContour, Griffig
-from data.loader import Loader
-
 import cv2
-import numpy as np
 
-image = Loader.get_image('human-grasping-2', '2021-03-04-18-36-22-507', 0, 'rcd', 'v')
+from _griffig import BoxData, Griffig
+from data.loader import Loader
+from frankx import Affine
 
-contour = BoxContour([0, 0, 0], [0.282, 0.174, 0.068])
-print(contour.corners)
 
-griffig = Griffig(contour)
+if __name__ == '__main__':
+    image = Loader.get_image('human-grasping-2', '2021-03-04-18-36-22-507', 0, 'rcd', 'v')
 
-start = time()
-image_drawn = griffig.draw_box_on_image(image.mat)
+    box_data = BoxData([0, 0, 0], [0.282, 0.174, 0.068], Affine())
+    print(box_data.contour)
 
-print(time() - start)
+    griffig = Griffig(box_data)
 
-cv2.imshow('image.png', image_drawn[:, :, 3])
-cv2.waitKey(1500)
+    start = time()
+    image_drawn = griffig.draw_box_on_image(image.mat)
+
+    print(time() - start)
+
+    cv2.imshow('image.png', image_drawn[:, :, :3])
+    cv2.waitKey(1500)

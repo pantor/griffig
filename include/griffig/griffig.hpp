@@ -7,13 +7,16 @@
 #include <GLFW/glfw3.h>
 #include <opencv2/opencv.hpp>
 
+#include <movex/affine.hpp>
 
-struct BoxContour {
-    std::vector<std::array<double, 3>> corners;
 
-    explicit BoxContour(const std::vector<std::array<double, 3>>& corners): corners(corners) { }
-    explicit BoxContour(const std::array<double, 3>& center, const std::array<double, 3>& size) {
-        corners = {
+struct BoxData {
+    std::vector<std::array<double, 3>> contour;
+    movex::Affine pose;
+
+    explicit BoxData(const std::vector<std::array<double, 3>>& contour, const movex::Affine& pose): contour(contour), pose(pose) { }
+    explicit BoxData(const std::array<double, 3>& center, const std::array<double, 3>& size, const movex::Affine& pose): pose(pose) {
+        contour = {
             {center[0] + size[0] / 2, center[1] + size[1] / 2, size[2]},
             {center[0] + size[0] / 2, center[1] - size[1] / 2, size[2]},
             {center[0] - size[0] / 2, center[1] - size[1] / 2, size[2]},
@@ -43,7 +46,7 @@ public:
 
 class Griffig {
     Window app {752, 480, ""};
-    BoxContour box_contour;
+    BoxData box_contour;
 
     cv::Mat box_rendered = cv::Mat::zeros(cv::Size(752, 480), CV_16UC4);
     cv::Mat depth = cv::Mat::zeros(cv::Size(752, 480), CV_32FC1);
@@ -51,16 +54,16 @@ class Griffig {
 
     void opengl_draw_box() const {
         glBegin(GL_QUADS);
-        glColor3f(1, 0, 0);
+        glColor3f(0.8, 0, 0);
 
-        if (!box_contour.corners.size() == 4) {
+        if (!box_contour.contour.size() == 4) {
             throw std::runtime_error("Box must have 4 corners currently.");
         }
 
-        auto& c0 = box_contour.corners.at(0);
-        auto& c1 = box_contour.corners.at(1);
-        auto& c2 = box_contour.corners.at(2);
-        auto& c3 = box_contour.corners.at(3);
+        auto& c0 = box_contour.contour.at(0);
+        auto& c1 = box_contour.contour.at(1);
+        auto& c2 = box_contour.contour.at(2);
+        auto& c3 = box_contour.contour.at(3);
 
         // Render contour
         glVertex3d(c2[0], -1, c2[2]);
@@ -86,7 +89,7 @@ class Griffig {
     }
 
 public:
-    Griffig(const BoxContour& box_contour): box_contour(box_contour) {
+    Griffig(const BoxData& box_contour): box_contour(box_contour) {
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_STENCIL_TEST);
 
