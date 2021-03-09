@@ -5,7 +5,9 @@
 #include <griffig/ndarray_converter.hpp>
 #include <griffig/orthographic_image.hpp>
 #include <griffig/checker.hpp>
+#include <griffig/robot_pose.hpp>
 #include <griffig/griffig.hpp>
+
 
 namespace py = pybind11;
 using namespace pybind11::literals; // to bring in the `_a` literal
@@ -37,8 +39,8 @@ PYBIND11_MODULE(_griffig, m) {
         .def("rescale", &OrthographicImage::rescale);
 
     py::class_<BoxData>(m, "BoxData")
-        .def(py::init<const std::vector<std::array<double, 3>>&, const movex::Affine&>(), "contour"_a, "pose"_a)
-        .def(py::init<const std::array<double, 3>&, const std::array<double, 3>&, const movex::Affine&>(), "center"_a, "size"_a, "pose"_a)
+        .def(py::init<const std::vector<std::array<double, 3>>&, const movex::Affine&>(), "contour"_a, "pose"_a=movex::Affine())
+        .def(py::init<const std::array<double, 3>&, const std::array<double, 3>&, const movex::Affine&>(), "center"_a, "size"_a, "pose"_a=movex::Affine())
         .def_readwrite("contour", &BoxData::contour)
         .def_readwrite("pose", &BoxData::pose)
         .def("as_dict", [](BoxData self) {
@@ -47,10 +49,43 @@ PYBIND11_MODULE(_griffig, m) {
             return d;
         });
 
-    py::class_<Griffig>(m, "Griffig")
+    py::class_<RobotPose, movex::Affine>(m, "RobotPose")
+        .def(py::init<const movex::Affine&, double>(), "affine"_a, "d"_a)
+        .def(py::init<double, double, double, double, double, double, double>(), "x"_a=0.0, "y"_a=0.0, "z"_a=0.0, "a"_a=0.0, "b"_a=0.0, "c"_a=0.0, "d"_a=0.0)
+        .def(py::init<double, double, double, double, double, double, double, double>(), "x"_a, "y"_a, "z"_a, "q_w"_a, "q_x"_a, "q_y"_a, "q_z"_a, "d"_a)
+        .def(py::init([](py::dict d) {
+            if (d.contains("q_x")) { // Prefer quaternion construction
+                return RobotPose(d["x"].cast<double>(), d["y"].cast<double>(), d["z"].cast<double>(), d["q_w"].cast<double>(), d["q_x"].cast<double>(), d["q_y"].cast<double>(), d["q_z"].cast<double>(), d["d"].cast<double>());
+            }
+            return RobotPose(d["x"].cast<double>(), d["y"].cast<double>(), d["z"].cast<double>(), d["a"].cast<double>(), d["b"].cast<double>(), d["c"].cast<double>(), d["d"].cast<double>());
+        }))
+        .def_readwrite("d", &RobotPose::d)
+        .def(py::self * movex::Affine())
+        .def(movex::Affine() * py::self)
+        .def("__repr__", &RobotPose::toString)
+        .def("as_dict", [](RobotPose self) {
+            auto translation = self.translation();
+            auto quaternion = self.quaternion();
+
+            py::dict d;
+            d["x"] = translation.x();
+            d["y"] = translation.y();
+            d["z"] = translation.z();
+            d["a"] = self.a();
+            d["b"] = self.b();
+            d["c"] = self.c();
+            d["q_w"] = quaternion.w();
+            d["q_x"] = quaternion.x();
+            d["q_y"] = quaternion.y();
+            d["q_z"] = quaternion.z();
+            d["d"] = self.d;
+            return d;
+        });
+
+    py::class_<Renderer>(m, "Renderer")
         .def(py::init<const BoxData&>(), "contour"_a)
-        // .def("render_pointcloud", &Griffig::check_collision);
-        .def("draw_box_on_image", &Griffig::draw_box_on_image);
+        // .def("render_pointcloud", &Renderer::check_collision);
+        .def("draw_box_on_image", &Renderer::draw_box_on_image);
 
     // py::class_<Checker>(m, "Checker")
     //     .def_readwrite("debug", &Checker::debug)
