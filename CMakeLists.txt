@@ -7,7 +7,6 @@ set(PYTHON_EXECUTABLE python3.7)
 
 
 find_package(Eigen3 3.3.7 REQUIRED NO_MODULE)
-find_package(Frankx 0.0.3 REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(pybind11 REQUIRED)

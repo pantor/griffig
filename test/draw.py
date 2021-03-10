@@ -19,5 +19,5 @@ if __name__ == '__main__':
 
     print(time() - start)
 
-    cv2.imshow('image.png', image_drawn[:, :, :3])
-    cv2.waitKey(1500)
+    cv2.imwrite('image.png', image_drawn[:, :, :3])
+    # cv2.waitKey(1500)

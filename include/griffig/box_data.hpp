@@ -10,6 +10,7 @@ struct BoxData {
     std::vector<std::array<double, 3>> contour;
     movex::Affine pose;
 
+    explicit BoxData() { }
     explicit BoxData(const std::vector<std::array<double, 3>>& contour, const movex::Affine& pose): contour(contour), pose(pose) { }
 
     explicit BoxData(const std::array<double, 3>& center, const std::array<double, 3>& size, const movex::Affine& pose): pose(pose) {
