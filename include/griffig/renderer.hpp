@@ -4,26 +4,13 @@
 #include <GLFW/glfw3.h>
 #include <opencv2/opencv.hpp>
 
+#include <movex/affine.hpp>
 #include <griffig/box_data.hpp>
+#include <griffig/gripper.hpp>
 #include <griffig/pointcloud.hpp>
+#include <griffig/robot_pose.hpp>
 
-
-class Window {
-    GLFWwindow *win;
-
-public:
-    explicit Window(int width, int height, const char* title) {
-        glfwInit();
-        glfwWindowHint(GLFW_VISIBLE, 0);
-        win = glfwCreateWindow(width, height, title, nullptr, nullptr);
-        glfwMakeContextCurrent(win);
-    }
-
-    ~Window() {
-        glfwDestroyWindow(win);
-        glfwTerminate();
-    }
-};
+using Affine = movex::Affine;
 
 
 struct OrthographicData {
@@ -34,6 +21,23 @@ struct OrthographicData {
 
 
 class Renderer {
+    class Window {
+        GLFWwindow *win;
+
+    public:
+        explicit Window(int width, int height, const char* title) {
+            glfwInit();
+            glfwWindowHint(GLFW_VISIBLE, 0);
+            win = glfwCreateWindow(width, height, title, nullptr, nullptr);
+            glfwMakeContextCurrent(win);
+        }
+
+        ~Window() {
+            glfwDestroyWindow(win);
+            glfwTerminate();
+        }
+    };
+
     Window app {752, 480, ""};
     BoxData box_contour;
 
@@ -41,7 +45,35 @@ class Renderer {
     cv::Mat depth = cv::Mat::zeros(cv::Size {752, 480}, CV_32FC1);
     cv::Mat mask = cv::Mat::zeros(cv::Size {752, 480}, CV_8UC1);
 
-    void opengl_draw_box() const {
+    void draw_affines(const std::array<Affine, 4>& affines) {
+        for (auto affine: affines) {
+            glVertex3d(-affine.y(), affine.x(), -affine.z());
+        }
+    }
+
+    void draw_cube(const Affine& pose, std::array<double, 3> size) {
+        auto tl = pose * Affine(-size[0] / 2, size[1] / 2, 0.0);
+        auto tr = pose * Affine(size[0] / 2, size[1] / 2, 0.0);
+        auto bl = pose * Affine(-size[0] / 2, -size[1] / 2, 0.0);
+        auto br = pose * Affine(size[0] / 2, -size[1] / 2, 0.0);
+
+        auto tlu = pose * Affine(-size[0] / 2, size[1] / 2, size[2]);
+        auto tru = pose * Affine(size[0] / 2, size[1] / 2, size[2]);
+        auto blu = pose * Affine(-size[0] / 2, -size[1] / 2, size[2]);
+        auto bru = pose * Affine(size[0] / 2, -size[1] / 2, size[2]);
+
+        draw_affines({tl, tr, br, bl});
+        draw_affines({tl, tr, tru, tlu});
+        draw_affines({bl, br, bru, blu});
+        draw_affines({tl, bl, blu, tlu});
+        draw_affines({tr, br, bru, tru});
+    }
+
+    void draw_gripper() const {
+
+    }
+
+    void draw_box() const {
         glBegin(GL_QUADS);
         glColor3f(0.8, 0, 0);
 
@@ -100,7 +132,7 @@ public:
         glOrtho(-alpha * width, alpha * width, -alpha * height, alpha * height, plane_near, plane_far);
         gluLookAt(-0.002, -0.0015, 0.35, -0.002, -0.0015, 0, 0, 1, 0);
 
-        opengl_draw_box();
+        draw_box();
 
         glReadPixels(0, 0, mask.cols, mask.rows, GL_STENCIL_INDEX, GL_UNSIGNED_BYTE, mask.data);
         glReadPixels(0, 0, depth.cols, depth.rows, GL_DEPTH_COMPONENT, GL_FLOAT, depth.data);
@@ -115,12 +147,16 @@ public:
         return image;
     }
 
+    cv::Mat draw_gripper_on_image(cv::Mat& image, const Gripper& gripper, const RobotPose& pose) {
+
+    }
+
     template<bool draw_texture>
     cv::Mat draw_pointcloud(const Pointcloud& cloud, cv::Size size, const OrthographicData& ortho, const std::array<double, 3>& camera_position) {
         color = cv::Mat::zeros(size, CV_16UC4);
         depth = cv::Mat::zeros(size, CV_32FC1);
 
-        if (!cloud.count) {
+        if (!cloud.size) {
             if constexpr (draw_texture) {
                 return color;
             } else {
@@ -156,11 +192,11 @@ public:
         glPointSize((float)size.width / 640);
         glBegin(GL_POINTS);
         {
-            for (size_t i = 0; i < cloud.count; ++i) {
-                glVertex3fv(*((Vertex *)cloud.vertices + i));
+            for (size_t i = 0; i < cloud.size; ++i) {
+                glVertex3fv(*((PointTypes::XYZ *)cloud.vertices + i));
 
                 if constexpr (draw_texture) {
-                    glTexCoord2fv(*((TexCoord *)cloud.tex_coords + i));
+                    glTexCoord2fv(*((PointTypes::UV *)cloud.tex_coords + i));
                 }
             }
         }

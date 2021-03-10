@@ -1,35 +1,4 @@
-/*
-#include <collisions/checker.hpp>
-
-
-using Affine = movex::Affine;
-
-
-inline void draw_affines(const std::array<Affine, 4>& affines) {
-    for (auto affine: affines) {
-        glVertex3d(-affine.y(), affine.x(), -affine.z());
-    }
-}
-
-void Checker::draw_cube(const Affine& pose, std::array<double, 3> size) {
-    auto tl = pose * Affine(-size[0] / 2, size[1] / 2, 0.0);
-    auto tr = pose * Affine(size[0] / 2, size[1] / 2, 0.0);
-    auto bl = pose * Affine(-size[0] / 2, -size[1] / 2, 0.0);
-    auto br = pose * Affine(size[0] / 2, -size[1] / 2, 0.0);
-
-    auto tlu = pose * Affine(-size[0] / 2, size[1] / 2, size[2]);
-    auto tru = pose * Affine(size[0] / 2, size[1] / 2, size[2]);
-    auto blu = pose * Affine(-size[0] / 2, -size[1] / 2, size[2]);
-    auto bru = pose * Affine(size[0] / 2, -size[1] / 2, size[2]);
-
-    draw_affines({tl, tr, br, bl});
-    draw_affines({tl, tr, tru, tlu});
-    draw_affines({bl, br, bru, blu});
-    draw_affines({tl, bl, blu, tlu});
-    draw_affines({tr, br, bru, tru});
-}
-
-bool Checker::check_collision(const OrthographicImage& image, const Affine& pose, double stroke) {
+/* bool Checker::check_collision(const OrthographicImage& image, const Affine& pose, double stroke) {
     int width = image.mat.cols;
     int height = image.mat.rows;
     cv::Mat result = cv::Mat::zeros(cv::Size(width, height), CV_32FC1);

@@ -8,33 +8,9 @@
 #include <movex/affine.hpp>
 
 
-/* struct Pointcloud {
-    struct PointXYZRGB {
-        float x, y, z;
-        float r, g, b;
-    };
+namespace PointTypes {
 
-    size_t width, height; // For image-based pointclouds
-
-    std::vector<PointXYZRGB> points;
-    movex::Affine pose;  // Sensor pose
-
-    Pointcloud() { }
-    Pointcloud(size_t width, size_t height): width(width), height(height) {
-        resize(width * height);
-    }
-
-    void resize(size_t count) {
-        points.resize(count);
-        if (count != width * height) {
-            width = count;
-            height = 1;
-        }
-    }
-}; */
-
-
-struct Vertex {
+struct XYZ {
     float x, y, z;
 
     operator const float* () const {
@@ -42,14 +18,24 @@ struct Vertex {
     }
 };
 
+struct XYZRGB {
+    float x, y, z;
+    float r, g, b;
 
-struct TexCoord {
+    operator const float* () const {
+        return &x;
+    }
+};
+
+struct UV {
     float u, v;
 
     operator const float* () const {
         return &u;
     }
 };
+
+} // namespace PointTypes
 
 
 class Texture {
@@ -79,10 +65,14 @@ public:
 
 
 struct Pointcloud {
-    size_t count;
+    // Numer of points
+    size_t size;
+
+    size_t width, height;
+
     const void* vertices;
     const Texture& tex;
     const void* tex_coords;
 
-    explicit Pointcloud(size_t count, const void* vertices, const Texture& tex, const void* tex_coords): tex(tex), count(count), vertices(vertices), tex_coords(tex_coords) { }
+    explicit Pointcloud(size_t size, const void* vertices, const Texture& tex, const void* tex_coords): tex(tex), size(size), vertices(vertices), tex_coords(tex_coords) { }
 };

@@ -24,8 +24,8 @@ public:
   double min_depth, max_depth; // [m]
 
   cv::Mat mat;
-  std::string camera;
 
+  std::string camera;
   Affine pose;
 
   explicit OrthographicImage(cv::Mat mat, double pixel_size, double min_depth, double max_depth): mat(mat), pixel_size(pixel_size), min_depth(min_depth), max_depth(max_depth), camera(""), pose(Affine()) { }
