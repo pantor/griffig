@@ -1,6 +1,7 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include <pybind11/operators.h>
+// #include <pybind11/numpy.h>
 
 #include <griffig/ndarray_converter.hpp>
 #include <griffig/griffig.hpp>
@@ -72,6 +73,11 @@ PYBIND11_MODULE(_griffig, m) {
         .def_readwrite("max_depth", &OrthographicImage::max_depth)
         .def_readwrite("camera", &OrthographicImage::camera)
         .def_readwrite("pose", &OrthographicImage::pose)
+        .def("clone", [](py::object self) {
+            py::object b = py::cast(OrthographicImage(self.cast<OrthographicImage>()));
+            b.attr("mat") = self.attr("mat").attr("copy")();
+            return b;
+        })
         .def("depth_from_value", &OrthographicImage::depthFromValue)
         .def("value_from_depth", &OrthographicImage::valueFromDepth)
         .def("project", &OrthographicImage::project)

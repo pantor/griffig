@@ -7,6 +7,7 @@
 #include <movex/affine.hpp>
 #include <griffig/box_data.hpp>
 #include <griffig/gripper.hpp>
+#include <griffig/orthographic_image.hpp>
 #include <griffig/pointcloud.hpp>
 #include <griffig/robot_pose.hpp>
 
@@ -113,12 +114,10 @@ public:
     Renderer() { }
     Renderer(const BoxData& box_contour): box_contour(box_contour) { }
 
-    cv::Mat draw_box_on_image(cv::Mat& image) {
-        const size_t width = image.cols;
-        const size_t height = image.rows;
-
-        const double plane_near = 0.22, plane_far = 0.41, pixel_size = 2000.0;
-        const double alpha = 1.0 / (2 * pixel_size);
+    OrthographicImage draw_box_on_image(OrthographicImage& image) {
+        const size_t width = image.mat.cols;
+        const size_t height = image.mat.rows;
+        const double alpha = 1.0 / (2 * image.pixel_size);
 
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_STENCIL_TEST);
@@ -129,7 +128,7 @@ public:
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-        glOrtho(-alpha * width, alpha * width, -alpha * height, alpha * height, plane_near, plane_far);
+        glOrtho(-alpha * width, alpha * width, -alpha * height, alpha * height, image.min_depth, image.max_depth);
         gluLookAt(-0.002, -0.0015, 0.35, -0.002, -0.0015, 0, 0, 1, 0);
 
         draw_box();
@@ -143,11 +142,11 @@ public:
 
         const int from_to[] = {0, 3};
         mixChannels(&depth, 1, &color, 1, from_to, 1);
-        color.copyTo(image, mask);
+        color.copyTo(image.mat, mask);
         return image;
     }
 
-    cv::Mat draw_gripper_on_image(cv::Mat& image, const Gripper& gripper, const RobotPose& pose) {
+    OrthographicImage draw_gripper_on_image(OrthographicImage& image, const Gripper& gripper, const RobotPose& pose) {
 
     }
 

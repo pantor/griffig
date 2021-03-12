@@ -1,6 +1,8 @@
 from pathlib import Path
 from frankx import Affine
 from _griffig import BoxData, Renderer
+import inference.selection as Selection
+
 
 class Griffig:
     def __init__(
@@ -19,7 +21,10 @@ class Griffig:
         self.last_grasp_successful = True
 
     def calculate_grasp(self, camera_pose, pointcloud, box_data=None, method=None):
-        image = self.renderer.render(pointcloud, camera_pose, pixel_size, min_depth, max_depth)
+        image = self.renderer.render(pointcloud, camera_pose, pixel_size, delta_depth)
+
+        selection_method = Selection.Max() if self.last_grasp_successful else Selection.Top(5)
+
         self.last_grasp_successful = True
 
     def report_grasp_failure(self):

@@ -28,9 +28,9 @@ public:
   std::string camera;
   Affine pose;
 
-  explicit OrthographicImage(cv::Mat mat, double pixel_size, double min_depth, double max_depth): mat(mat), pixel_size(pixel_size), min_depth(min_depth), max_depth(max_depth), camera(""), pose(Affine()) { }
-  explicit OrthographicImage(cv::Mat mat, double pixel_size, double min_depth, double max_depth, const std::string& camera): mat(mat), pixel_size(pixel_size), min_depth(min_depth), max_depth(max_depth), camera(camera), pose(Affine()) { }
-  explicit OrthographicImage(cv::Mat mat, double pixel_size, double min_depth, double max_depth, const std::string& camera, const Affine& pose): mat(mat), pixel_size(pixel_size), min_depth(min_depth), max_depth(max_depth), camera(camera), pose(pose) { }
+  explicit OrthographicImage(const cv::Mat& mat, double pixel_size, double min_depth, double max_depth): mat(mat), pixel_size(pixel_size), min_depth(min_depth), max_depth(max_depth), camera(""), pose(Affine()) { }
+  explicit OrthographicImage(const cv::Mat& mat, double pixel_size, double min_depth, double max_depth, const std::string& camera): mat(mat), pixel_size(pixel_size), min_depth(min_depth), max_depth(max_depth), camera(camera), pose(Affine()) { }
+  explicit OrthographicImage(const cv::Mat& mat, double pixel_size, double min_depth, double max_depth, const std::string& camera, const Affine& pose): mat(mat), pixel_size(pixel_size), min_depth(min_depth), max_depth(max_depth), camera(camera), pose(pose) { }
 
   OrthographicImage(const OrthographicImage& image) {
     pixel_size = image.pixel_size;

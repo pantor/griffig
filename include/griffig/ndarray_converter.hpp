@@ -125,7 +125,7 @@ public:
         if (!u) {
             return;
         }
-            
+
         PyEnsureGIL gil;
         CV_Assert(u->urefcount >= 0);
         CV_Assert(u->refcount >= 0);
@@ -324,6 +324,7 @@ PyObject* NDArrayConverter::toNDArray(const cv::Mat& m) {
         }
         p = &temp;
     }
+
     PyObject* o = (PyObject*)p->u->userdata;
     Py_INCREF(o);
     return o;
@@ -339,7 +340,7 @@ struct type_caster<cv::Mat> {
         return NDArrayConverter::toMat(src.ptr(), value);
     }
 
-    static handle cast(const cv::Mat &m, return_value_policy, handle defval) {
+    static handle cast(const cv::Mat& m, return_value_policy, handle defval) {
         return handle(NDArrayConverter::toNDArray(m));
     }
 };

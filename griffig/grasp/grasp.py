@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
-from frankx import Affine
 from _griffig import RobotPose
+
 
 @dataclass
 class Grasp:

@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 3.10)
 project(griffig VERSION 0.0.1 LANGUAGES CXX)
 
 
-list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 set(PYTHON_EXECUTABLE python3.7)
 
 
@@ -13,9 +12,7 @@ find_package(pybind11 REQUIRED)
 find_package(Python 3.7 EXACT REQUIRED COMPONENTS Interpreter Development)
 
 
-add_library(griffig SHARED
-  src/griffig.cpp
-)
+add_library(griffig SHARED src/griffig.cpp)
 target_compile_features(griffig PUBLIC cxx_std_17)
 target_include_directories(griffig PUBLIC ${GLFW_INCLUDE_DIRS} ${OPENGL_INCLUDE_DIR} include)
 target_link_libraries(griffig PUBLIC frankx::movex Eigen3::Eigen glfw ${GLFW_LIBRARIES} ${OPENGL_LIBRARIES} ${OpenCV_LIBS})
