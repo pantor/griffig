@@ -7,5 +7,7 @@ from _griffig import RobotPose
 class Grasp:
     pose: RobotPose
     estimated_reward: float
+    calculation_duration: float
+    
     method: str
-    clamping_distance: float
+    # clamping_distance: float

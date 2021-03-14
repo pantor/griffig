@@ -1,0 +1,36 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository and submodules
+      uses: actions/checkout@v2
+
+    - name: install Eigen3
+      run: |
+        git clone https://github.com/eigenteam/eigen-git-mirror.git
+        cd eigen-git-mirror
+        git checkout 3.3.7
+        mkdir build && cd build
+        cmake ..
+        sudo make install
+
+    - name: install pybind11
+      run: |
+        git clone https://github.com/pybind/pybind11.git
+        cd pybind11
+        git checkout v2.6.0
+        mkdir build && cd build
+        cmake -DPYBIND11_TEST=OFF ..
+        make
+        sudo make install
+
+    - name: configure & make
+      run: |
+        mkdir build && cd build
+        cmake ..
+        make

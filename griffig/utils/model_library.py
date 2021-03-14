@@ -1,5 +1,12 @@
 from dataclasses import dataclass
+from enum import Enum
 from typing import List
+
+
+class ModelType(Enum):
+    Planar = 'planar'  # Model-based z, and bc=0
+    Lateral = 'lateral'  # Model-based z, b, and c
+    ActorCritic = 'actor-critic'  # Actor-critic architecture
 
 
 @dataclass
@@ -10,6 +17,7 @@ class ModelData:
     pixel_size: float
     depth_diff: float
     gripper_widths: List[float]
+    type: ModelType
 
 
 class ModelLibrary:
@@ -21,6 +29,7 @@ class ModelLibrary:
             pixel_size=2000.0,
             depth_diff=(0.41 - 0.22),
             gripper_widths=[0.025, 0.05, 0.07, 0.086],
+            type=ModelType.ActorCritic,
         ),
     ]
 
