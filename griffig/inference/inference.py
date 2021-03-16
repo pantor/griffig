@@ -1,13 +1,8 @@
-from typing import Dict, Iterable
-
 import cv2
 import numpy as np
-import tensorflow.keras as tk  # pylint: disable=E0401
-import tensorflow.keras.backend as tkb  # pylint: disable=E0401
 
-import inference.selection as Selection
-from griffig import RobotPose, OrthographicImage, BoxData
-from utils.image import draw_around_box, get_inference_image
+from griffig import RobotPose, OrthographicImage
+from utils.image import get_inference_image
 from frankx import Affine
 
 
@@ -22,7 +17,7 @@ class Inference:
 
         self.size_area_cropped = (200, 200)
         self.size_result = (32, 32)
-        self.size_cropped = (110, 110)
+        self.size_cropped = (110, 110)  # ToDo
         self.scale_factors = (self.size_area_cropped[0] / self.size_result[0], self.size_area_cropped[1] / self.size_result[1])
 
         self.a_space = np.linspace(-np.pi/2 + 0.1, np.pi/2 - 0.1, 20)  # [rad] # Don't use a=0.0 -> even number

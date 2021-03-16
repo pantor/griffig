@@ -25,7 +25,7 @@ We focused on making *Griffig* easy to use! In the tutorial, we use a RGBD point
 from griffig import Affine, Griffig, Gripper, Pointcloud, Box
 
 # Griffig requires a RGB pointcloud of the scene
-pointcloud = Pointcloud(camera.record_pointcloud())
+pointcloud = Pointcloud.fromRealsense(camera.record_pointcloud())
 
 # Specify some options
 griffig = Griffig(
@@ -80,8 +80,8 @@ the `Griffig` class is the main interface for grasp calculations.
 ```python
 griffig = Griffig(
     model='two-finger-planar',
-    box_data=box_data,
     gripper=gripper,
+    box_data=box_data,
     check_collisions=True,
 )
 
@@ -93,8 +93,12 @@ griffig.report_grasp_failure()
 
 ```python
 
-Pointcloud.fromRealsense()
+pointcloud = Pointcloud(realsense_frame=<...>)
+# Pointcloud(ros_message=<...>)  # Pointcloud2 message type to be exact
+# Pointcloud(type=Pointcloudtype.XYZRGB, data=<...>)
 
+image = griffig.render(pointcloud)
+image.show()
 ```
 
 
@@ -105,11 +109,25 @@ The calculated grasp contains - of course - information about its grasp pose, bu
 ```python
 grasp = griffig.calculate_grasp(pointcloud, camera_pose=camera_pose)  # Get grasp in the global frame using the camera pose
 
-grasp.pose
-grasp.pose.d  # Gripper width
-grasp.estimated_reward  # Grasp probability in [0, 1]
-grasp.calculation_duration  # Calculation duration in [ms]
+print(f'Calculated grasp {grasp} in {grasp.calculation_duration} [ms].')  # Calculation duration in [ms]
 
+if grasp.estimated_reward < 0.2:  # Grasp probability in [0, 1]
+    print('The bin is probably empty!')
+
+# A typical grasp pipeline would look like this:
+approach_start = grasp.pose * Affine(z=-0.12)
+
+# Move robot to start of approach trajectory
+robot.move_linear(approach_start)
+
+# Move gripper to pre-shaped grasp width
+robot.move_gripper(grasp.pose.d)
+
+# Move robot to actual grasp pose
+robot_move_linear(grasp.pose)
+
+# And finally close the gripper
+robot.close_gripper()
 ```
 
 
@@ -118,7 +136,7 @@ grasp.calculation_duration  # Calculation duration in [ms]
 Griffig is written in C++17 and Python 3.7. It is tested against following dependency versions:
 
 - TensorFlow 2.4
-- Pybind11 2.6
+- PyBind11 2.6
 
 
 ### License

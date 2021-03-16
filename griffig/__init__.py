@@ -7,4 +7,4 @@ from _griffig import (
     Renderer,
 )
 
-from .griffig import Griffig
+# from .griffig import Griffig

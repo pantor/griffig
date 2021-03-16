@@ -14,11 +14,6 @@ using namespace pybind11::literals; // to bring in the `_a` literal
 PYBIND11_MODULE(_griffig, m) {
     NDArrayConverter::init_numpy();
 
-    py::class_<Gripper>(m, "Gripper");
-
-    py::class_<Pointcloud>(m, "Pointcloud")
-        .def_readwrite("size", &Pointcloud::size);
-
     py::class_<BoxData>(m, "BoxData")
         .def(py::init<const std::vector<std::array<double, 3>>&, const std::optional<movex::Affine>&>(), "contour"_a, "pose"_a = std::nullopt)
         .def(py::init<const std::array<double, 3>&, const std::array<double, 3>&, const std::optional<movex::Affine>&>(), "center"_a, "size"_a, "pose"_a = std::nullopt)
@@ -29,6 +24,14 @@ PYBIND11_MODULE(_griffig, m) {
             d["contour"] = self.contour;
             return d;
         });
+
+    py::class_<Gripper>(m, "Gripper")
+        .def_readwrite("robot_to_tip", &Gripper::robot_to_tip)
+        .def_readwrite("width_interval", &Gripper::width_interval)
+        .def_readwrite("finger_size", &Gripper::finger_size);
+
+    py::class_<Pointcloud>(m, "Pointcloud")
+        .def_readwrite("size", &Pointcloud::size);
 
     py::class_<RobotPose, movex::Affine>(m, "RobotPose")
         .def(py::init<const movex::Affine&, double>(), "affine"_a, "d"_a)
@@ -83,12 +86,7 @@ PYBIND11_MODULE(_griffig, m) {
         .def("project", &OrthographicImage::project)
         .def("inverse_project", &OrthographicImage::inverse_project)
         .def("position_from_index", &OrthographicImage::positionFromIndex)
-        .def("index_from_position", &OrthographicImage::indexFromPosition)
-        .def("translate", &OrthographicImage::translate)
-        .def("rotate_x", &OrthographicImage::rotateX)
-        .def("rotate_y", &OrthographicImage::rotateY)
-        .def("rotate_z", &OrthographicImage::rotateZ)
-        .def("rescale", &OrthographicImage::rescale);
+        .def("index_from_position", &OrthographicImage::indexFromPosition);
 
     py::class_<Renderer>(m, "Renderer")
         .def(py::init<const BoxData&>(), "contour"_a)

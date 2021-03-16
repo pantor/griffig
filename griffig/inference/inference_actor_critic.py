@@ -1,15 +1,13 @@
 import time
-from typing import Dict, Generator, Iterable
+from typing import Generator
 
 from loguru import logger
 import numpy as np
 
 from actions.action import Action
-from frankx import Affine
 from griffig import RobotPose, OrthographicImage, BoxData
 from inference.inference import Inference
 import inference.selection as Selection
-from utils.image import draw_around_box, get_area_of_interest
 
 
 class InferenceActorCritic(Inference):
@@ -17,14 +15,13 @@ class InferenceActorCritic(Inference):
             self,
             image: OrthographicImage,
             method: Selection.Method = Selection.Max(),
-            box_data: BoxData = None,
             sigma: float = None,  # Factor for randomize actor result, magnitude of [cm]
             verbose=1,
         ) -> Generator[Action, None, None]:
 
         start = time.time()
 
-        input_images = self.transform_for_prediction(image, box_data=box_data)
+        input_images = self.transform_for_prediction(image)
         estimated_rewards, actions = self.model.predict(input_images, batch_size=256)
 
         if sigma is not None:
@@ -50,7 +47,6 @@ class InferenceActorCritic(Inference):
             action.estimated_reward_std = None
             action.method = str(method)
             action.sigma = sigma
-            action.box_data = box_data
             action.step = 0  # Default value
 
             if verbose:
