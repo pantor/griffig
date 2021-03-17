@@ -26,11 +26,21 @@ jobs:
         git checkout v2.6.0
         mkdir build && cd build
         cmake -DPYBIND11_TEST=OFF ..
-        make
+        make -j2
+        sudo make install
+
+    - name: install OpenCV
+      run: |
+        git clone https://github.com/opencv/opencv.git
+        cd opencv
+        git checkout 4.5.0
+        mkdir build && cd build
+        cmake -DWITH_VTK=OFF -DWITH_GTK=OFF -DWITH_PROTOBUF=OFF -DBUILD_PERF_TESTS=OFF -DBUILD_TESTS=OFF -DWITH_WEBP=OFF ..
+        make -j2
         sudo make install
 
     - name: configure & make
       run: |
         mkdir build && cd build
         cmake ..
-        make
+        make -j2

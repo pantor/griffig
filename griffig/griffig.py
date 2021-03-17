@@ -2,10 +2,11 @@ from typing import Union
 
 from frankx import Affine
 from _griffig import BoxData, Renderer, Gripper, Pointcloud
-from griffig.grasp.checker import Checker
-from griffig.inference.inference_actor_critic import InferenceActorCritic
-import griffig.inference.selection as Selection
-from griffig.utils.model_library import ModelData, ModelLibrary, ModelArchitecture
+from .grasp.checker import Checker
+from .infer.inference_actor_critic import InferenceActorCritic
+from .infer.inference_planar import InferencePlanar
+from .infer.selection import Method, Max, Top
+from .utility.model_library import ModelData, ModelLibrary, ModelArchitecture
 
 
 class Griffig:
@@ -25,25 +26,31 @@ class Griffig:
         else:
             self.model_data = ModelLibrary.get_model_or_throw(model)
 
-        if self.model_data.architecture ==  ModelArchitecture.ActorCritic:
+        if self.model_data.architecture == ModelArchitecture.ActorCritic:
             self.inference = InferenceActorCritic(self.model_data, verbose=verbose)
+
+        elif self.model_data.architecture in [ModelArchitecture.Planar, ModelArchitecture.Lateral]:
+            self.inference = InferencePlanar(self.model_data, verbose=verbose)
+
         else:
             raise Exception(f'Model architecture {self.model_data.architecture} is not yet implemented.')
 
         self.checker = Checker(box_data, check_collisions)
 
-        self.renderer = Renderer(self.model_data.pixel_size, self.model_data.depth_diff)
+        self.renderer = Renderer(self.model_data.pixel_size, self.model_data.depth_diff, box_data)
         self.last_grasp_successful = True
 
     def calculate_grasp(self, camera_pose, pointcloud, box_data=None, method=None):
         image = self.renderer.render(pointcloud, camera_pose, box_data=box_data)
-        selection_method = Selection.Max() if self.last_grasp_successful else Selection.Top(5)
+        selection_method = method if method else (Max() if self.last_grasp_successful else Top(5))
 
-        action_iterator = self.inference.infer(image, selection_method)
-        grasp = self.checker.find_grasp(action_iterator)
+        action_generator = self.inference.infer(image, selection_method)
+        grasp = self.checker.find_grasp(action_generator)
+
+        if self.gripper:
+            grasp.pose = grasp.pose * self.gripper.robot_to_tip
 
         self.last_grasp_successful = True
-
         return grasp
 
     def render(self, pointcloud: Pointcloud):

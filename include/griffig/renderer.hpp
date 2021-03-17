@@ -1,5 +1,7 @@
 #pragma once
 
+#include <optional>
+
 #define GLFW_INCLUDE_GLU
 #include <GLFW/glfw3.h>
 #include <opencv2/opencv.hpp>
@@ -40,7 +42,10 @@ class Renderer {
     };
 
     Window app {752, 480, ""};
-    BoxData box_contour;
+    std::optional<BoxData> box_contour;
+
+    double pixel_size;
+    double depth_diff;
 
     cv::Mat color = cv::Mat::zeros(cv::Size {752, 480}, CV_16UC4);
     cv::Mat depth = cv::Mat::zeros(cv::Size {752, 480}, CV_32FC1);
@@ -78,14 +83,14 @@ class Renderer {
         glBegin(GL_QUADS);
         glColor3f(0.8, 0, 0);
 
-        if (!box_contour.contour.size() == 4) {
+        if (!box_contour || !box_contour->contour.size() == 4) {
             throw std::runtime_error("Box must have 4 corners currently.");
         }
 
-        auto& c0 = box_contour.contour.at(0);
-        auto& c1 = box_contour.contour.at(1);
-        auto& c2 = box_contour.contour.at(2);
-        auto& c3 = box_contour.contour.at(3);
+        auto& c0 = box_contour->contour.at(0);
+        auto& c1 = box_contour->contour.at(1);
+        auto& c2 = box_contour->contour.at(2);
+        auto& c3 = box_contour->contour.at(3);
 
         // Render contour
         glVertex3d(c2[0], -1, c2[2]);
@@ -112,7 +117,7 @@ class Renderer {
 
 public:
     Renderer() { }
-    Renderer(const BoxData& box_contour): box_contour(box_contour) { }
+    Renderer(double pixel_size, double depth_diff, const std::optional<BoxData>& box_contour): pixel_size(pixel_size), depth_diff(depth_diff), box_contour(box_contour) { }
 
     OrthographicImage draw_box_on_image(OrthographicImage& image) {
         const size_t width = image.mat.cols;

@@ -57,7 +57,7 @@ We define a box to avoid grasps outside of the box (and even worse: grasps of th
 ```python
 box_data = BoxData(
     size=(0.2, 0.3, 0.1),  # (x, y, z) [m]
-    pose=(0.0, 0.0, 0.0),  # At the center [m]
+    center=(0.0, 0.0, 0.0),  # At the center [m]
 )
 ```
 

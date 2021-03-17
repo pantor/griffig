@@ -73,9 +73,7 @@ struct Pointcloud {
     const void* tex_coords;
 
     explicit Pointcloud(size_t size, const void* vertices, const Texture& tex, const void* tex_coords): tex(tex), size(size), vertices(vertices), tex_coords(tex_coords) { }
-    explicit Pointcloud(size_t width, size_t height, size_t size, const void* vertices, const void* texture, const void* tex_coords) {
+    // explicit Pointcloud(size_t width, size_t height, size_t size, const void* vertices, const void* texture, const void* tex_coords) {
 
-    }
-
-    Gluint
+    // }
 };

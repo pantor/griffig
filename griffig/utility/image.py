@@ -4,7 +4,7 @@ import cv2
 import numpy as np
 
 from frankx import Affine
-from griffig import RobotPose, OrthographicImage, BoxData
+from _griffig import RobotPose, OrthographicImage, BoxData
 
 
 def crop(mat_image: Any, size_output: Sequence[float], vec=(0, 0)) -> Any:

@@ -1,9 +1,9 @@
 import cv2
 import numpy as np
 
-from griffig import RobotPose, OrthographicImage
-from utils.image import get_inference_image
 from frankx import Affine
+from _griffig import RobotPose, OrthographicImage
+from ..utility.image import get_inference_image
 
 
 class Inference:
@@ -18,7 +18,7 @@ class Inference:
         self.size_area_cropped = (200, 200)
         self.size_result = (32, 32)
         self.size_cropped = (110, 110)  # ToDo
-        self.scale_factors = (self.size_area_cropped[0] / self.size_result[0], self.size_area_cropped[1] / self.size_result[1])
+        self.scale_factors = (2.0 * self.size_area_cropped[0] / self.size_result[0], 2.0 * self.size_area_cropped[1] / self.size_result[1])
 
         self.a_space = np.linspace(-np.pi/2 + 0.1, np.pi/2 - 0.1, 20)  # [rad] # Don't use a=0.0 -> even number
         self.keep_indixes = None
@@ -26,17 +26,16 @@ class Inference:
         self.verbose = verbose
         self.rs = np.random.default_rng(seed=seed)
 
-    def pose_from_index(self, index, index_shape, main_image: OrthographicImage, resolution_factor=2.0) -> RobotPose:
+    def pose_from_index(self, index, index_shape, image: OrthographicImage) -> RobotPose:
         return RobotPose(Affine(
-            x=resolution_factor * self.scale_factors[0] * main_image.position_from_index(index[1], index_shape[1]),
-            y=resolution_factor * self.scale_factors[1] * main_image.position_from_index(index[2], index_shape[2]),
+            x=self.scale_factors[0] * image.position_from_index(index[1], index_shape[1]),
+            y=self.scale_factors[1] * image.position_from_index(index[2], index_shape[2]),
             a=self.a_space[index[0]],
         ).inverse(), d=0.0)
 
     def transform_for_prediction(
             self,
             image: OrthographicImage,
-            scale_around_zero=False,
     ):
         # Rotate images
         rotated = []
@@ -53,10 +52,7 @@ class Inference:
             cv2.imwrite('/tmp/test-input-c.png', result[0][0, :, :, :3] * 255)
             cv2.imwrite('/tmp/test-input-d.png', result[0][0, :, :, 3:] * 255)
 
-        if scale_around_zero:
-            return 2 * result - 1.0
-        else:
-            return result
+        return result
 
     @classmethod
     def keep_array_at_last_indixes(cls, array, indixes) -> None:

@@ -4,20 +4,20 @@ from typing import Generator
 from loguru import logger
 import numpy as np
 
-from actions.action import Action
-from griffig import RobotPose, OrthographicImage, BoxData
-from inference.inference import Inference
-import inference.selection as Selection
+from ..grasp.grasp import Grasp
+from _griffig import RobotPose, OrthographicImage, BoxData
+from ..infer.inference import Inference
+from ..infer.selection import Method, Max
 
 
 class InferenceActorCritic(Inference):
     def infer(
             self,
             image: OrthographicImage,
-            method: Selection.Method = Selection.Max(),
+            method: Method = Max(),
             sigma: float = None,  # Factor for randomize actor result, magnitude of [cm]
             verbose=1,
-        ) -> Generator[Action, None, None]:
+        ) -> Generator[Grasp, None, None]:
 
         start = time.time()
 
@@ -27,8 +27,6 @@ class InferenceActorCritic(Inference):
         if sigma is not None:
             actions += self.rs.normal([0.0, 0.0, 0.0], [sigma * 0.01, sigma * 0.1, sigma * 0.1], size=actions.shape)
 
-        # estimated_reward = self.model_critic.predict({'action': actor_result, 'image': np.array(input_images)[0]}, batch_size=256)
-
         # Set some action (indices) to zero
         if self.keep_indixes:
             self.keep_array_at_last_indixes(estimated_rewards, self.keep_indixes)
@@ -37,12 +35,11 @@ class InferenceActorCritic(Inference):
         for _ in range(estimated_rewards.size):
             index_raveled = method(estimated_rewards)
             index = np.unravel_index(index_raveled, estimated_rewards.shape)
-            action_from_actor = actions[index[0], index[1], index[2]]
 
-            action = Action()
+            action = Grasp()
             action.index = index[3]
             action.pose = self.pose_from_index(index, estimated_rewards.shape, image)
-            action.pose.z, action.pose.b, action.pose.c = action_from_actor
+            action.pose.z, action.pose.b, action.pose.c = actions[index[0], index[1], index[2]]
             action.estimated_reward = estimated_rewards[index]
             action.estimated_reward_std = None
             action.method = str(method)

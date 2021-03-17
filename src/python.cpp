@@ -26,6 +26,7 @@ PYBIND11_MODULE(_griffig, m) {
         });
 
     py::class_<Gripper>(m, "Gripper")
+        .def(py::init<const std::optional<movex::Affine>&, const std::optional<std::array<double, 2>>&, const std::optional<std::array<double, 3>>&>(), "robot_to_tip"_a = std::nullopt, "width_interval"_a = std::nullopt, "finger_size"_a = std::nullopt)
         .def_readwrite("robot_to_tip", &Gripper::robot_to_tip)
         .def_readwrite("width_interval", &Gripper::width_interval)
         .def_readwrite("finger_size", &Gripper::finger_size);
@@ -89,7 +90,7 @@ PYBIND11_MODULE(_griffig, m) {
         .def("index_from_position", &OrthographicImage::indexFromPosition);
 
     py::class_<Renderer>(m, "Renderer")
-        .def(py::init<const BoxData&>(), "contour"_a)
+        .def(py::init<double, double, const std::optional<BoxData>&>(), "pixel_size"_a, "depth_diff"_a, "contour"_a = std::nullopt)
         .def("draw_pointcloud", &Renderer::draw_pointcloud<true>)
         .def("draw_depth_pointcloud", &Renderer::draw_pointcloud<false>)
         .def("draw_gripper_on_image", &Renderer::draw_gripper_on_image)
