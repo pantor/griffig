@@ -1,7 +1,11 @@
 from typing import Union
 
+import cv2
+import numpy as np
+from PIL import Image
+
 from frankx import Affine
-from _griffig import BoxData, Renderer, Gripper, Pointcloud
+from _griffig import BoxData, Renderer, Gripper, Pointcloud, OrthographicData
 from .grasp.checker import Checker
 from .infer.inference_actor_critic import InferenceActorCritic
 from .infer.inference_planar import InferencePlanar
@@ -53,8 +57,9 @@ class Griffig:
         self.last_grasp_successful = True
         return grasp
 
-    def render(self, pointcloud: Pointcloud):
-        return self.renderer.draw_pointcloud(pointcloud)
+    def render(self, pointcloud: Pointcloud, pixel_density, min_depth, max_depth, size=(752, 480), position=[0.0, 0.0, 0.0]):
+        img = self.renderer.draw_pointcloud(pointcloud, size, OrthographicData(pixel_density, min_depth, max_depth), position)
+        return Image.fromarray((img[:, :, :3] / 255).astype(np.uint8))
 
     def report_grasp_failure(self):
         self.last_grasp_successful = False

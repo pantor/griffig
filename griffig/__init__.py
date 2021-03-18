@@ -6,6 +6,7 @@ from _griffig import (
     Pointcloud,
     Renderer,
     RobotPose,
+    OrthographicData,
     OrthographicImage,
 )
 

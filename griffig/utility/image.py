@@ -156,7 +156,7 @@ def draw_around_box(image: OrthographicImage, box_data: Optional[BoxData], draw_
         cv2.polylines(image.mat, [np.asarray(box_projection)], True, color, 2, lineType=cv2.LINE_AA)
 
     else:
-        color_array = np.array([image.mat[np.clip(p[1], 0, image.mat.shape[0]), np.clip(p[0], 0, image.mat.shape[1])] for p in box_projection], dtype=np.float32)
+        color_array = np.array([image.mat[np.clip(p[1], 0, image.mat.shape[0] - 1), np.clip(p[0], 0, image.mat.shape[1] - 1)] for p in box_projection], dtype=np.float32)
         if len(color_array.shape) > 1:
             color_array[np.mean(color_array, axis=1) < color_multiplier] = np.nan
         else:

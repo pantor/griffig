@@ -10,6 +10,10 @@ jobs:
     - name: Checkout repository and submodules
       uses: actions/checkout@v2
 
+    - name: install OpenGL
+      run: |
+        sudo apt install libglfw3 libglfw3-dev
+
     - name: install Eigen3
       run: |
         git clone https://github.com/eigenteam/eigen-git-mirror.git

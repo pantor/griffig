@@ -17,9 +17,11 @@ using Affine = movex::Affine;
 
 
 struct OrthographicData {
-    double pixel_size;
+    double pixel_density;
     double min_depth;
     double max_depth;
+
+    OrthographicData(double pixel_density, double min_depth, double max_depth): pixel_density(pixel_density), min_depth(min_depth), max_depth(max_depth) { }
 };
 
 
@@ -156,9 +158,10 @@ public:
     }
 
     template<bool draw_texture>
-    cv::Mat draw_pointcloud(const Pointcloud& cloud, cv::Size size, const OrthographicData& ortho, const std::array<double, 3>& camera_position) {
-        color = cv::Mat::zeros(size, CV_16UC4);
-        depth = cv::Mat::zeros(size, CV_32FC1);
+    cv::Mat draw_pointcloud(const Pointcloud& cloud, const std::array<size_t, 2>& size, const OrthographicData& ortho, const std::array<double, 3>& camera_position) {
+        cv::Size cv_size {size[0], size[1]};
+        color = cv::Mat::zeros(cv_size, CV_16UC4);
+        depth = cv::Mat::zeros(cv_size, CV_32FC1);
 
         if (!cloud.size) {
             if constexpr (draw_texture) {
@@ -172,10 +175,10 @@ public:
         glEnable(GL_DEPTH_TEST);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        const double alpha = 1.0 / (2 * ortho.pixel_size);
+        const double alpha = 1.0 / (2 * ortho.pixel_density);
         glMatrixMode(GL_PROJECTION);
         glPushMatrix();
-        glOrtho(-alpha * size.width, alpha * size.width, -alpha * size.height, alpha * size.height, ortho.min_depth, ortho.max_depth);
+        glOrtho(-alpha * cv_size.width, alpha * cv_size.width, -alpha * cv_size.height, alpha * cv_size.height, ortho.min_depth, ortho.max_depth);
 
         glMatrixMode(GL_MODELVIEW);
         glPushMatrix();
@@ -193,7 +196,7 @@ public:
         }
 
         glEnable(GL_POINT_SMOOTH);
-        glPointSize((float)size.width / 640);
+        glPointSize((float)cv_size.width / 640);
         glBegin(GL_POINTS);
         {
             for (size_t i = 0; i < cloud.size; ++i) {

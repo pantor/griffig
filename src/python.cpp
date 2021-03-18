@@ -1,7 +1,6 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include <pybind11/operators.h>
-// #include <pybind11/numpy.h>
 
 #include <griffig/ndarray_converter.hpp>
 #include <griffig/griffig.hpp>
@@ -31,7 +30,33 @@ PYBIND11_MODULE(_griffig, m) {
         .def_readwrite("width_interval", &Gripper::width_interval)
         .def_readwrite("finger_size", &Gripper::finger_size);
 
+    py::enum_<PointType>(m, "PointType")
+        .value("XYZ", PointType::XYZ)
+        .value("XYZRGB", PointType::XYZRGB)
+        .value("UV", PointType::UV)
+        .export_values();
+
     py::class_<Pointcloud>(m, "Pointcloud")
+        .def(py::init([](py::object realsense_frames, py::object ros_message, py::object type, py::object data) {
+            if (realsense_frames) {
+                std::cout << "HERE" << std::endl;
+                py::object depth = realsense_frames.attr("get_depth_frame")();
+                py::object color = realsense_frames.attr("get_color_frame")();
+
+                py::object pointcloud = py::module_::import("pyrealsense2").attr("pointcloud");
+                // py::object points = pointcloud.attr("calculate")(pointcloud, depth);
+                // pointcloud.attr("map_to")(color);
+                // return std::make_unique<Pointcloud>(points.size(), color.get_width(), color.get_height(), points.get_vertices(), color.get_data(), points.get_texture_coordinates());
+
+            } else if (ros_message) {
+
+            } else if (type && data) {
+
+            } else {
+
+            }
+            return std::make_unique<Pointcloud>();
+        }), py::kw_only(), "realsense_frames"_a=py::none(), "ros_message"_a=py::none(), "type"_a=py::none(), "data"_a=py::none())
         .def_readwrite("size", &Pointcloud::size);
 
     py::class_<RobotPose, movex::Affine>(m, "RobotPose")
@@ -67,6 +92,12 @@ PYBIND11_MODULE(_griffig, m) {
             return d;
         });
 
+    py::class_<OrthographicData>(m, "OrthographicData")
+        .def(py::init<double, double, double>(), "pixel_density"_a, "min_depth"_a, "max_depth"_a)
+        .def_readwrite("pixel_density", &OrthographicData::pixel_density)
+        .def_readwrite("min_depth", &OrthographicData::min_depth)
+        .def_readwrite("max_depth", &OrthographicData::max_depth);
+
     py::class_<OrthographicImage>(m, "OrthographicImage")
         .def(py::init<const cv::Mat&, double, double, double>())
         .def(py::init<const cv::Mat&, double, double, double, const std::string&>())
@@ -91,8 +122,8 @@ PYBIND11_MODULE(_griffig, m) {
 
     py::class_<Renderer>(m, "Renderer")
         .def(py::init<double, double, const std::optional<BoxData>&>(), "pixel_size"_a, "depth_diff"_a, "contour"_a = std::nullopt)
-        .def("draw_pointcloud", &Renderer::draw_pointcloud<true>)
+        .def("draw_pointcloud", &Renderer::draw_pointcloud<true>, "pointcloud"_a, "size"_a, "ortho"_a, "camera_position"_a = (std::array<double, 3>){0.0, 0.0, 0.0})
         .def("draw_depth_pointcloud", &Renderer::draw_pointcloud<false>)
-        .def("draw_gripper_on_image", &Renderer::draw_gripper_on_image)
-        .def("draw_box_on_image", &Renderer::draw_box_on_image);
+        .def("draw_gripper_on_image", &Renderer::draw_gripper_on_image, "image"_a, "gripper"_a, "pose"_a)
+        .def("draw_box_on_image", &Renderer::draw_box_on_image, "image"_a);
 }

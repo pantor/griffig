@@ -5,7 +5,7 @@
   </h3>
 </div>
 
-Griffig is a library for 6D-grasping on pointclouds, learned from large-scale imitation and self-supervision. Mostly trained in (and for) a bin picking scenario. It is very fast (< 50ms) for typical calculations and robust with grasp rates as high as 95% in complex but trained bin picking scenarios. Paper.
+Griffig is a library for robotic grasping on pointclouds, learned from large-scale imitation and self-supervision. The published models are mostly trained in bin picking scenarios. It is very fast (< 50ms) for typical calculations and robust with grasp rates as high as 95% in complex but trained bin picking scenarios. This is the source code and corresponding library for our paper *Learning 6D Robotic Grasping using a Fully-convolutional Actor-critic Architecture*.
 
 
 ## Installation
@@ -14,7 +14,7 @@ Griffig is a library for Python 3.7+. You can install Griffig via
 ```bash
 pip install griffig
 ```
-or by building it yourself. Griffig depends on TensorFlow 2.4, OpenGL, and Pybind11. Will need Tensorflow 2.4, a GPU with NVIDIA GPU is highly recommended to achieve calculation times of < 100ms.
+or by building it yourself. For building, Griffig depends on OpenGL, OpenCV 4.5, and Pybind11. Will need Tensorflow 2.4, a GPU with NVIDIA GPU is highly recommended to achieve calculation times of < 100ms.
 
 
 ## Tutorial
@@ -91,12 +91,19 @@ griffig.report_grasp_failure()
 
 ### Pointcloud Class
 
+Griffig uses its own Pointcloud class as input to its rendering pipeline. It only stores the pointer to the data, but doesn't hold anything. Currently, three possible inputs are supported:
+
 ```python
-
+# 1. Input from a realsense frame
 pointcloud = Pointcloud(realsense_frame=<...>)
-# Pointcloud(ros_message=<...>)  # Pointcloud2 message type to be exact
-# Pointcloud(type=Pointcloudtype.XYZRGB, data=<...>)
 
+# 2. Input from a ROS Pointcloud2 message
+pointcloud = Pointcloud(ros_message=<...>)
+
+# 3. The raw pointer variant...
+pointcloud = Pointcloud(type=PointType.XYZRGB, data=cloud_data.ptr())
+
+# Then, we can render the pointcloud
 image = griffig.render(pointcloud)
 image.show()
 ```
@@ -135,10 +142,11 @@ robot.close_gripper()
 
 Griffig is written in C++17 and Python 3.7. It is tested against following dependency versions:
 
+- OpenCV 4.5.0
 - TensorFlow 2.4
 - PyBind11 2.6
 
 
 ### License
 
-LGPL for non-commercial usage.
+Griffig is licensed under LGPL for non-commercial usage.

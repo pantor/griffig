@@ -64,16 +64,25 @@ public:
 };
 
 
+enum class PointType {
+    XYZ,
+    XYZRGB,
+    UV,
+};
+
+
 struct Pointcloud {
-    size_t size;
+    size_t size {0};
+    PointType point_type;
     size_t width, height;
 
     const void* vertices;
-    const Texture& tex;
+    Texture tex;
     const void* tex_coords;
 
-    explicit Pointcloud(size_t size, const void* vertices, const Texture& tex, const void* tex_coords): tex(tex), size(size), vertices(vertices), tex_coords(tex_coords) { }
-    // explicit Pointcloud(size_t width, size_t height, size_t size, const void* vertices, const void* texture, const void* tex_coords) {
-
-    // }
+    explicit Pointcloud() { }
+    explicit Pointcloud(size_t size, PointType point_type, const void* vertices): size(size), point_type(point_type), vertices(vertices) { }
+    explicit Pointcloud(size_t size, size_t width, size_t height, const void* vertices, const void* texture, const void* tex_coords): size(size), point_type(PointType::XYZ), width(width), height(height), vertices(vertices), tex_coords(tex_coords) {
+        tex.upload(width, height, texture);
+    }
 };
