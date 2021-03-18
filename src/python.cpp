@@ -39,12 +39,12 @@ PYBIND11_MODULE(_griffig, m) {
     py::class_<Pointcloud>(m, "Pointcloud")
         .def(py::init([](py::object realsense_frames, py::object ros_message, py::object type, py::object data) {
             if (realsense_frames) {
-                std::cout << "HERE" << std::endl;
+                std::cout << "realsense_frames" << std::endl;
                 py::object depth = realsense_frames.attr("get_depth_frame")();
                 py::object color = realsense_frames.attr("get_color_frame")();
 
                 py::object pointcloud = py::module_::import("pyrealsense2").attr("pointcloud");
-                // py::object points = pointcloud.attr("calculate")(pointcloud, depth);
+                py::object points = pointcloud.attr("calculate")(pointcloud, depth);
                 // pointcloud.attr("map_to")(color);
                 // return std::make_unique<Pointcloud>(points.size(), color.get_width(), color.get_height(), points.get_vertices(), color.get_data(), points.get_texture_coordinates());
 
