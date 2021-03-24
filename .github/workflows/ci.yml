@@ -14,7 +14,7 @@ jobs:
 
     - name: install OpenGL
       run: |
-        sudo apt install libglfw3 libglfw3-dev libgl1-mesa-dev libglu1-mesa-dev
+        sudo apt install libglfw3 libglfw3-dev libgl1-mesa-dev libglu1-mesa-dev python3-numpy
 
     - name: install Eigen3
       run: |
@@ -41,7 +41,7 @@ jobs:
         cd opencv
         git checkout 4.5.0
         mkdir build && cd build
-        cmake -DWITH_VTK=OFF -DWITH_GTK=OFF -DWITH_PROTOBUF=OFF -DBUILD_PERF_TESTS=OFF -DBUILD_opencv_gapi=OFF -DBUILD_opencv_java=OFF -DBUILD_opencv_video=OFF -DBUILD_opencv_videoio=OFF -DBUILD_opencv_dnn=OFF -DBUILD_opencv_ml=OFF -DBUILD_opencv_flann=OFF -DBUILD_opencv_objdetect=OFF -DBUILD_TESTS=OFF -DWITH_WEBP=OFF ..
+        cmake -DWITH_VTK=OFF -DWITH_GTK=OFF -DWITH_PROTOBUF=OFF -DBUILD_PERF_TESTS=OFF -DBUILD_opencv_gapi=OFF -DBUILD_opencv_java=OFF -DBUILD_opencv_video=OFF -DBUILD_opencv_videoio=OFF -DBUILD_opencv_dnn=OFF -DBUILD_opencv_features2d=OFF -DBUILD_opencv_ml=OFF -DBUILD_opencv_flann=OFF -DBUILD_opencv_objdetect=OFF -DBUILD_TESTS=OFF -DWITH_WEBP=OFF ..
         make -j2
         sudo make install
 
