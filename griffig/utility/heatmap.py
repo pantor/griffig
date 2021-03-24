@@ -1,89 +1,85 @@
 import cv2
 import numpy as np
 
-from actions.action import Affine
-from inference.inference import Inference
-from inference.inference_planar import InferencePlanar
-from inference.inference_actor_critic import InferenceActorCritic
-from griffig import OrthographicImage, BoxData
-from utils.image import draw_line
+from ..infer.inference_planar import InferencePlanar
+from ..infer.inference_actor_critic import InferenceActorCritic
+from _griffig import BoxData, OrthographicImage
+from ..utility.image2 import draw_line
 
 
 class Heatmap:
-    def __init__(self, inf, a_space=None, augment_resolution=True):
-        self.inf = inf
+    def __init__(self, inference, a_space=None):
+        self.inference = inference
 
         if a_space is not None:
-            self.inf.a_space = a_space
+            self.inference.a_space = a_space
 
-        self.augment_resolution = augment_resolution
-
-        self.size_area_cropped = 200
-        self.size_area_result = 32
-
-    def calculate_heat(self, reward, size_result=(752, 480)):
+    def calculate_heat(self, reward, size_cropped, size_result):
         size_reward_center = (reward.shape[1] / 2, reward.shape[2] / 2)
-        scale = self.size_area_cropped / self.size_area_result * (80.0 / reward.shape[1])
+        scale = self.inference.size_area_cropped[0] / self.inference.size_result[0] * ((size_cropped[0] - 30) / reward.shape[1])
 
-        a_space_idx = range(len(self.inf.a_space))
+        a_space_idx = range(len(self.inference.a_space))
 
         heat_values = np.zeros(size_result[::-1], dtype=np.float)
         for i in a_space_idx:
-            a = self.inf.a_space[i]
+            a = self.inference.a_space[i]
             rot_mat = cv2.getRotationMatrix2D(size_reward_center, -a * 180.0 / np.pi, scale)
             rot_mat[0][2] += size_result[0] / 2 - size_reward_center[0]
             rot_mat[1][2] += size_result[1] / 2 - size_reward_center[1]
             heat_values += cv2.warpAffine(reward[i], rot_mat, size_result, borderValue=0)
 
         norm = (5 * heat_values.max() + len(a_space_idx)) / 6
-        # norm = heat_values.max()
-
-        return heat_values * 255.0 / norm
+        return (heat_values / norm * 255.0).astype(np.uint8)
 
     def render(
             self,
             image: OrthographicImage,
             goal_image: OrthographicImage = None,
-            box_data: BoxData =None,
-            alpha=0.5,
+            box_data: BoxData = None,
+            alpha=0.4,
+            use_rgb=True,
             save_path=None,
             reward_index=None,
             draw_directions=False,
             indices=None,
         ):
-        base = image.mat
-        inputs = self.inf.transform_for_prediction({'rcd': image}, box_data=box_data, augment_resolution=self.augment_resolution)
+        # inputs = self.inference.transform_for_prediction({'rcd': image}, box_data=box_data)
+        input_images = self.inference.get_input_images(image, box_data)
 
         if goal_image:
-            base = goal_image.mat
-            inputs += self.inf.transform_for_prediction({'rcd': goal_image}, box_data=box_data, augment_resolution=self.augment_resolution)
+            # inputs += self.inference.transform_for_prediction({'rcd': goal_image}, box_data=box_data)
+            input_images += self.inference.get_input_images(goal_image, box_data)
 
-        if isinstance(self.inf, InferenceActorCritic):
-            rewards, actor_result = self.inf.model.predict(inputs, batch_size=128)
+        if isinstance(self.inference, InferenceActorCritic):
+            reward, actor_result = self.inference.model.predict(inputs, batch_size=128)
 
         else:
-            rewards = self.inf.model.predict(inputs, batch_size=128)
-
-        if self.augment_resolution:
-            reward = self.inf.split_resolution(rewards)
-        else:
-            reward = rewards
+            reward = self.inference.model.predict(inputs, batch_size=128)
 
         if reward_index is not None:
             reward = reward[reward_index]
 
-        # reward = np.maximum(reward, 0)
-        reward_mean = np.mean(reward, axis=3)
-        # reward_mean = reward[:, :, :, 0]
+        # reward_reduced = np.maximum(reward, 0)
+        reward_reduced = np.mean(reward, axis=3)
+        # reward_reduced = reward[:, :, :, 0]
 
-        heat_values = self.calculate_heat(reward_mean)
+        size_cropped = (input_images.shape[2], input_images.shape[1])
+        size_result = image.mat.shape[1::-1]
 
-        if base.shape[-1] == 4:
-            base = base[:, :, 0]
+        heat = self.calculate_heat(reward_reduced, size_cropped, size_result)
+        heat = cv2.applyColorMap(heat, cv2.COLORMAP_JET)
 
-        heatmap = cv2.applyColorMap(heat_values.astype(np.uint8), cv2.COLORMAP_JET)
-        base_heatmap = cv2.cvtColor(base, cv2.COLOR_GRAY2RGB) / 255 + alpha * heatmap
-        result = OrthographicImage(base_heatmap, image.pixel_size, image.min_depth, image.max_depth)
+        if len(image.mat.shape) >= 3 and image.mat.shape[-1] >= 3:
+            if use_rgb:
+                back = cv2.cvtColor(image.mat[:, :, :3], cv2.COLOR_RGB2GRAY)
+                back = cv2.cvtColor(back, cv2.COLOR_GRAY2RGB)
+            else:
+                back = cv2.cvtColor(image.mat[:, :, 3:], cv2.COLOR_GRAY2RGB)
+        else:
+            back = cv2.cvtColor(image.mat, cv2.COLOR_GRAY2RGB)
+        
+        result = (1 - alpha) * back + alpha * heat
+        result = OrthographicImage(result, image.pixel_size, image.min_depth, image.max_depth)
 
         if indices is not None:
             self.draw_indices(result, reward, indices)

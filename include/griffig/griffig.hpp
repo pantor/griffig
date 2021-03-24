@@ -1,7 +1,6 @@
 #pragma once
 
 #include <griffig/box_data.hpp>
-#include <griffig/checker.hpp>
 #include <griffig/gripper.hpp>
 #include <griffig/orthographic_image.hpp>
 #include <griffig/pointcloud.hpp>

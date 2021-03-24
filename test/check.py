@@ -45,7 +45,7 @@ if __name__ == '__main__':
     realsense = RealsenseReader(args.input)
     pointcloud = Pointcloud(realsense_frames=realsense.get_first_frameset())
 
-    image = griffig.render(pointcloud, pixel_density=2000.0, min_depth=0.22, max_depth=0.41)
+    image = griffig.render(pointcloud, pixel_size=2000.0, min_depth=0.22, max_depth=0.41)
     image.show()
 
     # griffig.report_grasp_failure()

@@ -1,41 +1,36 @@
 #pragma once
 
-#include <vector>
-
 #define GLFW_INCLUDE_GLU
 #include <GLFW/glfw3.h>
 
-#include <movex/affine.hpp>
+
+enum class PointType {
+    XYZ,
+    XYZRGB,
+    XYZWRGBA,
+    UV,
+};
 
 
 namespace PointTypes {
+    struct XYZ {
+        float x, y, z;
+    };
 
-struct XYZ {
-    float x, y, z;
+    struct XYZRGB {
+        float x, y, z;
+        float r, g, b;
+    };
 
-    operator const float* () const {
-        return &x;
-    }
-};
+    struct XYZWRGBA {
+        float x, y, z, w;
+        unsigned char r, g, b, a;
+    };
 
-struct XYZRGB {
-    float x, y, z;
-    float r, g, b;
-
-    operator const float* () const {
-        return &x;
-    }
-};
-
-struct UV {
-    float u, v;
-
-    operator const float* () const {
-        return &u;
-    }
-};
-
-} // namespace PointTypes
+    struct UV {
+        float u, v;
+    };
+}
 
 
 class Texture {
@@ -64,19 +59,13 @@ public:
 };
 
 
-enum class PointType {
-    XYZ,
-    XYZRGB,
-    UV,
-};
-
-
 struct Pointcloud {
     size_t size {0};
-    PointType point_type;
-    size_t width, height;
+    size_t width {0}, height {0};
 
+    PointType point_type;
     const void* vertices;
+
     Texture tex;
     const void* tex_coords;
 

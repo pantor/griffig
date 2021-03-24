@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 
-from frankx import Affine
+from pyaffx import Affine
 from _griffig import RobotPose, OrthographicImage
 from ..utility.image import get_inference_image
 

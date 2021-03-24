@@ -3,7 +3,7 @@ from typing import Any, List, Sequence, Tuple, Optional, Union
 import cv2
 import numpy as np
 
-from frankx import Affine
+from pyaffx import Affine
 from _griffig import RobotPose, OrthographicImage, BoxData
 
 
@@ -102,13 +102,21 @@ def get_inference_image(
     )
 
 
-def get_rect_contour(center: Sequence[float], size: Sequence[float]) -> List[Sequence[float]]:
+def _get_rect_contour(center: Sequence[float], size: Sequence[float]) -> List[Sequence[float]]:
     return [
         [center[0] + size[0] / 2, center[1] + size[1] / 2, size[2]],
         [center[0] + size[0] / 2, center[1] - size[1] / 2, size[2]],
         [center[0] - size[0] / 2, center[1] - size[1] / 2, size[2]],
         [center[0] - size[0] / 2, center[1] + size[1] / 2, size[2]],
     ]
+
+
+def get_box_projection(image: OrthographicImage, box_data: BoxData):
+    if not box_data:
+        return
+
+    box_border = [Affine(*p) for p in box_data.contour]
+    return [image.project(p) for p in box_border]
 
 
 def draw_line(
@@ -144,7 +152,7 @@ def draw_around_box(image: OrthographicImage, box_data: Optional[BoxData], draw_
     assert box_data, 'Box contour should be drawn, but is false.'
 
     box_border = [Affine(*p) for p in box_data.contour]
-    image_border = [Affine(*p) for p in get_rect_contour([0.0, 0.0, 0.0], [10.0, 10.0, box_data.contour[0][2]])]
+    image_border = [Affine(*p) for p in _get_rect_contour([0.0, 0.0, 0.0], [10.0, 10.0, box_data.contour[0][2]])]
     box_projection = [image.project(image.pose.inverse() * p) for p in box_border]
 
     color_multiplier = 1. / 255 if image.mat.dtype == np.float32 else np.iinfo(image.mat.dtype).max / 255
@@ -184,7 +192,7 @@ def draw_pose(image: OrthographicImage, action_pose: RobotPose, convert_to_rgb=F
     color_lines = (0, 0, 255)  # Red
     color_direction = (0, 255, 0)  # Green
 
-    rect = [Affine(*p) for p in get_rect_contour([0.0, 0.0, 0.0], [200.0 / image.pixel_size, 200.0 / image.pixel_size, 0.0])]
+    rect = [Affine(*p) for p in _get_rect_contour([0.0, 0.0, 0.0], [200.0 / image.pixel_size, 200.0 / image.pixel_size, 0.0])]
 
     draw_polygon(image, action_pose, rect, color_rect, 2)
 

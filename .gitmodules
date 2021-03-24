@@ -1,0 +1,3 @@
+[submodule "affx"]
+	path = affx
+	url = https://github.com/pantor/affx.git
