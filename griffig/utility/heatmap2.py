@@ -35,7 +35,10 @@ class Heatmap:
         size_cropped = (input_images.shape[2], input_images.shape[1])
         size_result = image.mat.shape[1::-1]
 
+        # reward_reduced = np.max(estimated_reward, axis=3)
         reward_reduced = np.mean(estimated_reward, axis=3)
+        # reward_reduced = estimated_reward[:, :, :, 0]
+
         heat = self.calculate_heat(reward_reduced, size_cropped, size_result)
         heat = cv2.applyColorMap(heat, cv2.COLORMAP_JET)
 

@@ -51,17 +51,17 @@ class Heatmap:
             input_images += self.inference.get_input_images(goal_image, box_data)
 
         if isinstance(self.inference, InferenceActorCritic):
-            reward, actor_result = self.inference.model.predict(inputs, batch_size=128)
+            estimated_reward, actor_result = self.inference.model.predict(inputs, batch_size=128)
 
         else:
-            reward = self.inference.model.predict(inputs, batch_size=128)
+            estimated_reward = self.inference.model.predict(inputs, batch_size=128)
 
         if reward_index is not None:
-            reward = reward[reward_index]
+            estimated_reward = estimated_reward[reward_index]
 
-        # reward_reduced = np.maximum(reward, 0)
-        reward_reduced = np.mean(reward, axis=3)
-        # reward_reduced = reward[:, :, :, 0]
+        # reward_reduced = np.maximum(estimated_reward, 0)
+        reward_reduced = np.mean(estimated_reward, axis=3)
+        # reward_reduced = estimated_reward[:, :, :, 0]
 
         size_cropped = (input_images.shape[2], input_images.shape[1])
         size_result = image.mat.shape[1::-1]
