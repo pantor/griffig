@@ -11,11 +11,11 @@ find_package(pybind11 2.6 REQUIRED)
 add_subdirectory(affx)
 
 
-add_library(griffig SHARED src/griffig.cpp)
+add_library(griffig src/griffig.cpp)
 target_compile_features(griffig PUBLIC cxx_std_17)
 target_include_directories(griffig PUBLIC ${GLFW_INCLUDE_DIRS} ${OPENGL_INCLUDE_DIR} include)
 target_link_libraries(griffig PUBLIC affx glfw ${GLFW_LIBRARIES} ${OPENGL_LIBRARIES} ${OpenCV_LIBS})
 
 
-pybind11_add_module(_griffig SHARED src/python.cpp)
+pybind11_add_module(_griffig src/python.cpp)
 target_link_libraries(_griffig PUBLIC griffig)

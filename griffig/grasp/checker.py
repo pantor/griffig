@@ -40,9 +40,6 @@ class Checker:
             self.converter.calculate_b(image_area, grasp)
             self.converter.calculate_c(image_area, grasp)
 
-            # Adapt z depending on b, c
-            grasp.pose.z -= 0.02 * np.sin(grasp.pose.b)**2 + 0.02 * np.sin(grasp.pose.c)**2
-
         return (np.isfinite([grasp.pose.x, grasp.pose.y, grasp.pose.z]).all() and self.is_grasp_inside_box(grasp, box_data))
 
     def is_grasp_inside_box(self, grasp: Grasp, box_data: BoxData):
