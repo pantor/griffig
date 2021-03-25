@@ -45,17 +45,14 @@ class Renderer {
         }
     };
 
-    const int width {752}, height {480};
-    Window app {width, height, ""};
-    std::optional<BoxData> box_contour;
+    std::unique_ptr<Window> app;
+    size_t width, height;
 
     double pixel_size;
     double depth_diff;
 
-    cv::Mat color = cv::Mat::zeros(cv::Size {width, height}, CV_16UC4);
-    cv::Mat depth = cv::Mat::zeros(cv::Size {width, height}, CV_32FC1);
-    cv::Mat mask = cv::Mat::zeros(cv::Size {width, height}, CV_8UC1);
-
+    std::optional<BoxData> box_contour;
+    
     void draw_affines(const std::array<Affine, 4>& affines) {
         for (auto affine: affines) {
             glVertex3d(-affine.y(), affine.x(), -affine.z());
@@ -122,17 +119,24 @@ class Renderer {
 
 public:
     std::array<double, 3> camera_position;
-    double point_size {2.0}; // Point size for OpenGL rendering
 
+    explicit Renderer(const std::array<double, 2>& size, double pixel_size, double depth_diff, const std::optional<BoxData>& box_contour): width(size[0]), height(size[1]), pixel_size(pixel_size), depth_diff(depth_diff), box_contour(box_contour) {
+        app = std::make_unique<Window>(width, height, "");
+    }
 
-    Renderer() { }
-    Renderer(double pixel_size, double depth_diff, const std::optional<BoxData>& box_contour): pixel_size(pixel_size), depth_diff(depth_diff), box_contour(box_contour) { }
-    Renderer(const std::array<double, 3>& position, double point_size): camera_position(position), point_size(point_size) { }
+    explicit Renderer(const std::array<double, 2>& size, const std::array<double, 3>& position): width(size[0]), height(size[1]), camera_position(position) {
+        app = std::make_unique<Window>(size[0], size[1], "");
+    }
 
     OrthographicImage draw_box_on_image(OrthographicImage& image) {
         const size_t width = image.mat.cols;
         const size_t height = image.mat.rows;
+        const cv::Size cv_size {(int)width, (int)height};
         const double alpha = 1.0 / (2 * image.pixel_size);
+
+        cv::Mat color = cv::Mat::zeros(cv_size, CV_16UC4);
+        cv::Mat depth = cv::Mat::zeros(cv_size, CV_32FC1);
+        cv::Mat mask = cv::Mat::zeros(cv_size, CV_8UC1);
 
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_STENCIL_TEST);
@@ -166,10 +170,10 @@ public:
     }
 
     template<bool draw_texture>
-    cv::Mat draw_pointcloud(const Pointcloud& cloud, const std::array<size_t, 2>& size, const OrthographicData& ortho, const std::array<double, 3>& camera_position) {
-        cv::Size cv_size {size[0], size[1]};
-        color = cv::Mat::zeros(cv_size, CV_16UC4);
-        depth = cv::Mat::zeros(cv_size, CV_32FC1);
+    cv::Mat draw_pointcloud(const Pointcloud& cloud, const OrthographicData& ortho, const std::array<double, 3>& camera_position) {
+        cv::Size cv_size {(int)width, (int)height};
+        cv::Mat color = cv::Mat::zeros(cv_size, CV_16UC4);
+        cv::Mat depth = cv::Mat::zeros(cv_size, CV_32FC1);
 
         if (!cloud.size) {
             if constexpr (draw_texture) {
@@ -186,7 +190,7 @@ public:
         const double alpha = 1.0 / (2 * ortho.pixel_density);
         glMatrixMode(GL_PROJECTION);
         glPushMatrix();
-        glOrtho(-alpha * cv_size.width, alpha * cv_size.width, -alpha * cv_size.height, alpha * cv_size.height, ortho.min_depth, ortho.max_depth);
+        glOrtho(alpha * cv_size.width, -alpha * cv_size.width, -alpha * cv_size.height, alpha * cv_size.height, ortho.min_depth, ortho.max_depth);
 
         glMatrixMode(GL_MODELVIEW);
         glPushMatrix();
@@ -230,7 +234,6 @@ public:
 
         if constexpr (!draw_texture)  {
             cv::cvtColor(depth, depth, cv::COLOR_RGB2GRAY);
-            cv::flip(depth, depth, 1);
             return depth;
         }
 
@@ -238,13 +241,13 @@ public:
 
         const int from_to[] = {0, 3};
         mixChannels(&depth, 1, &color, 1, from_to, 1);
-        cv::flip(color, color, 1);
         return color;
     }
 
     OrthographicImage render_pointcloud(const Pointcloud& cloud, double pixel_density, double min_depth, double max_depth) {
-        cv::Mat color = cv::Mat::zeros(cv::Size(width, height), CV_16UC4);
-        cv::Mat depth = cv::Mat::zeros(cv::Size(width, height), CV_32FC1);
+        cv::Size cv_size {(int)width, (int)height};
+        cv::Mat color = cv::Mat::zeros(cv_size, CV_16UC4);
+        cv::Mat depth = cv::Mat::zeros(cv_size, CV_32FC1);
 
         if (cloud.size == 0) {
             return OrthographicImage(color, pixel_density, min_depth, max_depth);
@@ -258,14 +261,13 @@ public:
         const double alpha = 1.0 / (2 * pixel_density);
         glMatrixMode(GL_PROJECTION);
         glPushMatrix();
-        glOrtho(-alpha * width, alpha * width, -alpha * height, alpha * height, min_depth, max_depth);
+        glOrtho(alpha * width, -alpha * width, -alpha * height, alpha * height, min_depth, max_depth);
 
         glMatrixMode(GL_MODELVIEW);
         glPushMatrix();
         gluLookAt(camera_position[0], camera_position[1], camera_position[2], camera_position[0], camera_position[1], 1.0, 0.0, -1.0, 0.0);
 
         glEnable(GL_POINT_SMOOTH);
-        glPointSize(point_size);
         glBegin(GL_POINTS);
         {
             for (size_t i = 0; i < cloud.size; ++i) {
@@ -290,7 +292,6 @@ public:
 
         const int from_to[] = {0, 3};
         mixChannels(&depth, 1, &color, 1, from_to, 1);
-        cv::flip(color, color, 1);
         return OrthographicImage(color, pixel_density, min_depth, max_depth);
     }
 };

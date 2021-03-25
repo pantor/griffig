@@ -10,6 +10,7 @@ from .image import get_transformation
 from .image import _get_rect_contour
 from .image import get_box_projection
 
+
 def get_area_of_interest(image, pose, size_cropped, size_result, return_mat=False):
     size_input = (image.mat.shape[1], image.mat.shape[0])
     center_image = (size_input[0] / 2, size_input[1] / 2)

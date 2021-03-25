@@ -136,13 +136,12 @@ PYBIND11_MODULE(_griffig, m) {
         });
 
     py::class_<Renderer>(m, "Renderer")
-        .def(py::init<double, double, const std::optional<BoxData>&>(), "pixel_size"_a, "depth_diff"_a, "contour"_a = std::nullopt)
-        .def(py::init<const std::array<double, 3>&, double>(), "position"_a, "point_size"_a)
-        .def("draw_pointcloud", &Renderer::draw_pointcloud<true>, "pointcloud"_a, "size"_a, "ortho"_a, "camera_position"_a = (std::array<double, 3>){0.0, 0.0, 0.0})
+        .def(py::init<const std::array<double, 2>&, double, double, const std::optional<BoxData>&>(), "size"_a, "pixel_size"_a, "depth_diff"_a, "contour"_a = std::nullopt)
+        .def(py::init<const std::array<double, 2>&, const std::array<double, 3>&>(), "size"_a, "position"_a)
+        .def("draw_pointcloud", &Renderer::draw_pointcloud<true>, "pointcloud"_a, "ortho"_a, "camera_position"_a = (std::array<double, 3>){0.0, 0.0, 0.0})
         .def("draw_depth_pointcloud", &Renderer::draw_pointcloud<false>)
         .def("draw_gripper_on_image", &Renderer::draw_gripper_on_image, "image"_a, "gripper"_a, "pose"_a)
         .def("draw_box_on_image", &Renderer::draw_box_on_image, "image"_a)
         .def("render_pointcloud", &Renderer::render_pointcloud)
-	    .def_readwrite("camera_position", &Renderer::camera_position)
-	    .def_readwrite("point_size", &Renderer::point_size);
+	    .def_readwrite("camera_position", &Renderer::camera_position);
 }
