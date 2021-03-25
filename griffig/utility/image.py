@@ -74,6 +74,7 @@ def get_inference_image(
         size_cropped: Tuple[float, float],
         size_area_cropped: Tuple[float, float],
         size_area_result: Tuple[float, float],
+        return_mat=False,
     ) -> OrthographicImage:
     size_input = (image.mat.shape[1], image.mat.shape[0])
     center_image = (size_input[0] / 2, size_input[1] / 2)
@@ -89,6 +90,8 @@ def get_inference_image(
         cropped=(size_cropped[0] / scale, size_cropped[1] / scale),
     )
     mat_result = cv2.warpAffine(image.mat, trans, size_cropped, borderMode=cv2.BORDER_REPLICATE, flags=cv2.INTER_AREA)
+    if return_mat:
+        return mat_result
 
     image_pose = Affine(x=pose.x, y=pose.y, a=pose.a) * image.pose
 

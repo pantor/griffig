@@ -1,4 +1,3 @@
-import time
 from typing import Generator
 
 from loguru import logger
@@ -18,8 +17,6 @@ class InferenceActorCritic(Inference):
             sigma: float = None,  # Factor for randomize actor result, magnitude of [cm]
             verbose=1,
         ) -> Generator[Grasp, None, None]:
-
-        start = time.time()
 
         input_images = self.transform_for_prediction(image)
         estimated_rewards, actions = self.model.predict(input_images, batch_size=256)
@@ -45,9 +42,6 @@ class InferenceActorCritic(Inference):
             action.method = str(method)
             action.sigma = sigma
             action.step = 0  # Default value
-
-            if verbose:
-                logger.info(f'NN inference time [s]: {time.time() - start:.3}, Sigma: {sigma}')
 
             yield action
 

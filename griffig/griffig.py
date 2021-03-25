@@ -40,8 +40,8 @@ class Griffig:
             raise Exception(f'Model architecture {self.model_data.architecture} is not yet implemented.')
 
         self.checker = Checker(box_data, check_collisions)
+        self.renderer = Renderer(box_data.get_image_size(self.model_data.pixel_size, offset=6), [0.0, 0.0, 0.0])
 
-        self.renderer = Renderer(self.model_data.pixel_size, self.model_data.depth_diff, box_data)
         self.last_grasp_successful = True
 
     def calculate_grasp(self, camera_pose, pointcloud, box_data=None, method=None):

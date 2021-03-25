@@ -44,14 +44,6 @@ class Renderer {
             glfwTerminate();
         }
     };
-
-    std::unique_ptr<Window> app;
-    size_t width, height;
-
-    double pixel_size;
-    double depth_diff;
-
-    std::optional<BoxData> box_contour;
     
     void draw_affines(const std::array<Affine, 4>& affines) {
         for (auto affine: affines) {
@@ -117,8 +109,16 @@ class Renderer {
         glEnd();
     }
 
+    std::unique_ptr<Window> app;
+
 public:
-    std::array<double, 3> camera_position;
+    size_t width, height;
+    double pixel_size;
+    double typical_camera_distance;
+    double depth_diff;
+
+    std::optional<BoxData> box_contour;
+    std::array<double, 3> camera_position {0.0, 0.0, 0.0};
 
     explicit Renderer(const std::array<double, 2>& size, double pixel_size, double depth_diff, const std::optional<BoxData>& box_contour): width(size[0]), height(size[1]), pixel_size(pixel_size), depth_diff(depth_diff), box_contour(box_contour) {
         app = std::make_unique<Window>(width, height, "");
@@ -126,6 +126,13 @@ public:
 
     explicit Renderer(const std::array<double, 2>& size, const std::array<double, 3>& position): width(size[0]), height(size[1]), camera_position(position) {
         app = std::make_unique<Window>(size[0], size[1], "");
+    }
+
+    explicit Renderer(const BoxData& box_data, double typical_camera_distance, double pixel_size, double depth_diff): box_contour(box_data), typical_camera_distance(typical_camera_distance), pixel_size(pixel_size), depth_diff(depth_diff) {
+        const auto size = box_data.get_rect(pixel_size, 5);
+        width = size[0];
+        height = size[1];
+        app = std::make_unique<Window>(width, height, "");
     }
 
     OrthographicImage draw_box_on_image(OrthographicImage& image) {
@@ -244,8 +251,17 @@ public:
         return color;
     }
 
+    template<bool draw_texture>
+    OrthographicImage render_pointcloud_easy(const Pointcloud& cloud) {
+        const double min_depth = typical_camera_distance - depth_diff;
+        const double max_depth = typical_camera_distance;
+
+        return render_pointcloud<draw_texture>(cloud, pixel_size, min_depth, max_depth);
+    }
+
+    template<bool draw_texture>
     OrthographicImage render_pointcloud(const Pointcloud& cloud, double pixel_density, double min_depth, double max_depth) {
-        cv::Size cv_size {(int)width, (int)height};
+        const cv::Size cv_size {(int)width, (int)height};
         cv::Mat color = cv::Mat::zeros(cv_size, CV_16UC4);
         cv::Mat depth = cv::Mat::zeros(cv_size, CV_32FC1);
 

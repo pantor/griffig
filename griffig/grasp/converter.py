@@ -55,11 +55,11 @@ class Converter:
         if analyze_collision:
             z_raw_left = image_area.depth_from_value(np.nanmin(area_left) * 255 * 255)
             z_raw_right = image_area.depth_from_value(np.nanmin(area_right) * 255 * 255)
-            z_raw_collision = min(z_raw_left, z_raw_right) - 0.008  # [m]
+            z_raw_collision = min(z_raw_left, z_raw_right) - 0.03  # [m]
         else:
             z_raw_collision = np.Inf
 
-        grasp.pose.z = min(z_raw, z_raw_collision) + self.z_offset  # Get the maximum [m] for impedance mode
+        grasp.pose.z = min(z_raw, z_raw_collision) + self.z_offset # Get the maximum [m] for impedance mode
 
     def calculate_b(self, image_area, grasp):
         b_lateral_default_size_px_height = int(image_area.pixel_size * self.image_area_size)

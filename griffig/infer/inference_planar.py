@@ -1,5 +1,4 @@
-from os import environ, path
-import json
+from pathlib import Path
 
 import cv2
 import numpy as np
@@ -12,13 +11,13 @@ from _griffig import BoxData, Gripper, OrthographicImage
 from ..utility.image2 import draw_around_box, get_box_projection, get_inference_image
 
 
-class Inference:
+class InferencePlanar:
     def __init__(self, model_data, converter, gaussian_sigma=None, seed=None, debug=False):
-        self.model = self._load_model(model_data['name'], 'grasp')
+        self.model = self._load_model(model_data.path, 'grasp')
         self.debug = debug
 
-        self.size_area_cropped = model_data['size_area_cropped']
-        self.size_result = model_data['size_result']
+        self.size_area_cropped = model_data.size_area_cropped
+        self.size_result = model_data.size_result
         self.scale_factors = (self.size_area_cropped[0] / self.size_result[0], self.size_area_cropped[1] / self.size_result[1])
 
         self.a_space = np.linspace(-np.pi/2 + 0.05, np.pi/2 - 0.05, 20)  # [rad] # Don't use a=0.0 -> even number
@@ -27,16 +26,8 @@ class Inference:
 
         self.converter = converter
 
-    @classmethod
-    def load_model_data(cls, name: str):
-        base_path = path.join(path.dirname(path.realpath(__file__)), '../../../models/{}')
-        with open(base_path.format(name) + '.json', 'r') as read_file:
-            model_data = json.load(read_file)
-        return model_data
-
-    def _load_model(self, name: str, submodel=None):
-        base_path = path.join(path.dirname(path.realpath(__file__)), '../../../models/{}')
-        model = tk.models.load_model(base_path.format(name) + '.tf', compile=False)
+    def _load_model(self, path: Path, submodel=None):
+        model = tk.models.load_model(path, compile=False)
 
         if submodel:
             model = model.get_layer(submodel)
@@ -64,7 +55,7 @@ class Inference:
             )
 
         if self.debug:
-            cv2.imwrite('src/learned_grasping/tmp/inf.png', result_[10][:, :, 3])
+            cv2.imwrite('/tmp/inf.png', result_[10][:, :, 3])
 
         result = np.array(result_, dtype=np.float32) / np.iinfo(image.mat.dtype).max
         if len(result.shape) == 3:

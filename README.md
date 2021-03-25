@@ -32,7 +32,8 @@ griffig = Griffig(
     model='two-finger',  # Use the default model for a two-finger gripper
     gripper=Gripper(  # Some information about the gripper
         robot_to_tip=Affine(x=0.2),  # Transformation between robot's end-effector and finger tips [m]
-        width_interval=(1.0, 10.0),  # Pre-shaped width in [cm]
+        min_stroke=0.01, # [m]
+        max_stroke=0.10, # [m], to limit pre-shaped width
     ),
 )
 
@@ -68,8 +69,9 @@ We use the gripper class for collision checks.
 ```python
 gripper = Gripper(
     robot_to_tip=Affine(),  # Transformation between robot's end-effector and finger tips [m]
-    width_interval=(1.0, 10.0),  # Pre-shaped width in [cm]
-    finger_size=(0.01, 0.01, 0.1),  # Size of the finger for optional collision check [m]
+    min_stroke=0.01, # [m]
+    max_stroke=0.10, # [m], pre-shaped width
+    finger_size=(0.01, 0.01, 0.1),  # Size of a bounding box for optional collision check [m]
 )
 ```
 

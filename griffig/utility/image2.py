@@ -37,7 +37,8 @@ def get_area_of_interest(image, pose, size_cropped, size_result, return_mat=Fals
     mat_result = cv2.warpAffine(image.mat, trans, size_final, flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_REPLICATE)
     if return_mat:
         return mat_result
-    
+
+    # image_pose = Affine(x=pose.x, y=pose.y, a=-pose.a) * image.pose
     return OrthographicImage(mat_result, scale * image.pixel_size, image.min_depth, image.max_depth)
 
 

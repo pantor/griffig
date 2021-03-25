@@ -21,6 +21,7 @@ PYBIND11_MODULE(_griffig, m) {
         .def(py::init<const std::array<double, 3>&, const std::array<double, 3>&, const std::optional<Affine>&>(), "center"_a, "size"_a, "pose"_a = std::nullopt)
         .def_readwrite("contour", &BoxData::contour)
         .def_readwrite("pose", &BoxData::pose)
+        .def("get_rect", &BoxData::get_rect, "pixel_size"_a, "offset"_a=0)
         .def("as_dict", [](BoxData self) {
             py::dict d;
             d["contour"] = self.contour;
@@ -138,10 +139,17 @@ PYBIND11_MODULE(_griffig, m) {
     py::class_<Renderer>(m, "Renderer")
         .def(py::init<const std::array<double, 2>&, double, double, const std::optional<BoxData>&>(), "size"_a, "pixel_size"_a, "depth_diff"_a, "contour"_a = std::nullopt)
         .def(py::init<const std::array<double, 2>&, const std::array<double, 3>&>(), "size"_a, "position"_a)
+        .def(py::init<const BoxData&, double, double, double>(), "box_data"_a, "typical_camera_distance"_a, "pixel_size"_a, "depth_diff"_a)
         .def("draw_pointcloud", &Renderer::draw_pointcloud<true>, "pointcloud"_a, "ortho"_a, "camera_position"_a = (std::array<double, 3>){0.0, 0.0, 0.0})
         .def("draw_depth_pointcloud", &Renderer::draw_pointcloud<false>)
         .def("draw_gripper_on_image", &Renderer::draw_gripper_on_image, "image"_a, "gripper"_a, "pose"_a)
         .def("draw_box_on_image", &Renderer::draw_box_on_image, "image"_a)
-        .def("render_pointcloud", &Renderer::render_pointcloud)
-	    .def_readwrite("camera_position", &Renderer::camera_position);
+        .def("render_pointcloud", &Renderer::render_pointcloud<true>)
+        .def("render_pointcloud_easy", &Renderer::render_pointcloud_easy<true>)
+	    .def_readwrite("camera_position", &Renderer::camera_position)
+        .def_readwrite("box_data", &Renderer::box_contour)
+        .def_readwrite("pixel_size", &Renderer::pixel_size)
+        .def_readwrite("depth_diff", &Renderer::depth_diff)
+        .def_readwrite("width", &Renderer::width)
+        .def_readwrite("height", &Renderer::height);
 }

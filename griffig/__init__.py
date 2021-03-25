@@ -11,8 +11,8 @@ from _griffig import (
     RobotPose,
 )
 
+from .griffig import Griffig
 from .grasp.grasp import Grasp
 from .utility.heatmap2 import Heatmap
-
-# from .griffig import Griffig
-# from .model_data import ModelData, ModelArchitecture
+from .utility.model_data import ModelData, ModelArchitecture
+from .utility.model_library import ModelLibrary

@@ -1,8 +1,10 @@
 #pragma once
 
 #include <array>
-#include <vector>
 #include <optional>
+#include <vector>
+
+#include <opencv2/opencv.hpp>
 
 #include <affx/affine.hpp>
 
@@ -25,5 +27,14 @@ struct BoxData {
             {center[0] - size[0] / 2, center[1] - size[1] / 2, size[2]},
             {center[0] - size[0] / 2, center[1] + size[1] / 2, size[2]},
         };
+    }
+
+    std::array<int, 2> get_rect(float pixel_size, int offset) const {
+        std::vector<cv::Point2f> cont;
+        for (auto e: contour) {
+            cont.push_back({(float)e[0] * pixel_size, (float)e[1] * pixel_size});
+        }
+        auto rect = cv::boundingRect(cont);
+        return {rect.height + offset, rect.width + offset};
     }
 };
