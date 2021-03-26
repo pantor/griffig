@@ -16,43 +16,44 @@ jobs:
       run: |
         sudo apt install libglfw3 libglfw3-dev libgl1-mesa-dev libglu1-mesa-dev python3-numpy
 
-    # - name: install Eigen3
-    #   run: |
-    #     git clone https://github.com/eigenteam/eigen-git-mirror.git
-    #     cd eigen-git-mirror
-    #     git checkout 3.3.7
-    #     mkdir build && cd build
-    #     cmake ..
-    #     sudo make install
+    - name: install Eigen3
+      run: |
+        git clone https://github.com/eigenteam/eigen-git-mirror.git
+        cd eigen-git-mirror
+        git checkout 3.3.7
+        mkdir build && cd build
+        cmake ..
+        sudo make install
 
-    # - name: install pybind11
-    #   run: |
-    #     git clone https://github.com/pybind/pybind11.git
-    #     cd pybind11
-    #     git checkout v2.6.2
-    #     mkdir build && cd build
-    #     cmake -DPYBIND11_TEST=OFF ..
-    #     make -j2
-    #     sudo make install
+    - name: install pybind11
+      run: |
+        git clone https://github.com/pybind/pybind11.git
+        cd pybind11
+        git checkout v2.6.2
+        mkdir build && cd build
+        cmake -DPYBIND11_TEST=OFF ..
+        make -j2
+        sudo make install
 
-    # - name: install OpenCV
-    #   run: |
-    #     git clone https://github.com/opencv/opencv.git
-    #     cd opencv
-    #     git checkout 4.5.0
-    #     mkdir build && cd build
-    #     cmake -DWITH_VTK=OFF -DWITH_GTK=OFF -DWITH_PROTOBUF=OFF -DBUILD_PERF_TESTS=OFF -DBUILD_opencv_gapi=OFF -DBUILD_opencv_java=OFF -DBUILD_opencv_video=OFF -DBUILD_opencv_videoio=OFF -DBUILD_opencv_dnn=OFF -DBUILD_opencv_features2d=OFF -DBUILD_opencv_ml=OFF -DBUILD_opencv_flann=OFF -DBUILD_opencv_objdetect=OFF -DBUILD_TESTS=OFF -DWITH_WEBP=OFF ..
-    #     make -j2
-    #     sudo make install
+    - name: install OpenCV
+      run: |
+        git clone https://github.com/opencv/opencv.git
+        cd opencv
+        git checkout 4.5.0
+        mkdir build && cd build
+        cmake -DWITH_VTK=OFF -DWITH_GTK=OFF -DWITH_PROTOBUF=OFF -DBUILD_PERF_TESTS=OFF -DBUILD_opencv_gapi=OFF -DBUILD_opencv_java=OFF -DBUILD_opencv_video=OFF -DBUILD_opencv_videoio=OFF -DBUILD_opencv_dnn=OFF -DBUILD_opencv_features2d=OFF -DBUILD_opencv_ml=OFF -DBUILD_opencv_flann=OFF -DBUILD_opencv_objdetect=OFF -DBUILD_TESTS=OFF -DWITH_WEBP=OFF ..
+        make -j2
+        sudo make install
 
-    # - name: configure & make
-    #   run: |
-    #     mkdir build && cd build
-    #     cmake ..
-    #     make -j2
+    - name: configure & make
+      run: |
+        python3 setup.py bdist_wheel
+    #    mkdir build && cd build
+    #    cmake ..
+    #    make -j2
 
-    - name: build Python wheels
-      uses: RalfG/python-wheels-manylinux-build@v0.3.3-manylinux2014_x86_64
-      with:
-        build-requirements: 'pybind11'
-        system-packages: 'opencv opencv-devel eigen3'
+    # - name: build Python wheels
+    #   uses: RalfG/python-wheels-manylinux-build@v0.3.3-manylinux2014_x86_64
+    #   with:
+    #     build-requirements: 'pybind11'
+    #     system-packages: 'opencv opencv-devel eigen3'
