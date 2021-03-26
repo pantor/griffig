@@ -6,7 +6,7 @@ from PIL import Image
 
 from pyaffx import Affine
 from _griffig import BoxData, Renderer, Gripper, Pointcloud, OrthographicData
-from .grasp.checker import Checker
+from .action.checker import Checker
 from .infer.inference_actor_critic import InferenceActorCritic
 from .infer.inference_planar import InferencePlanar
 from .infer.selection import Method, Max, Top
@@ -28,7 +28,7 @@ class Griffig:
         if isinstance(model, ModelData):
             self.model_data = model
         else:
-            self.model_data = ModelLibrary.get_model_or_throw(model)
+            self.model_data = ModelLibrary.load_model_data(model)
 
         if self.model_data.architecture == ModelArchitecture.ActorCritic:
             self.inference = InferenceActorCritic(self.model_data, verbose=verbose)

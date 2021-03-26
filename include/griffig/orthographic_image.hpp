@@ -27,9 +27,9 @@ public:
   cv::Mat mat;
 
   std::optional<std::string> camera;
-  std::optional<Affine> pose;
+  Affine pose {};
 
-  explicit OrthographicImage(const cv::Mat& mat, double pixel_size, double min_depth, double max_depth, const std::optional<std::string>& camera = std::nullopt, const std::optional<Affine>& pose = std::nullopt): mat(mat), pixel_size(pixel_size), min_depth(min_depth), max_depth(max_depth), camera(camera), pose(pose) { }
+  explicit OrthographicImage(const cv::Mat& mat, double pixel_size, double min_depth, double max_depth, const std::optional<std::string>& camera = std::nullopt, const Affine& pose = Affine()): mat(mat), pixel_size(pixel_size), min_depth(min_depth), max_depth(max_depth), camera(camera), pose(pose) { }
   OrthographicImage(const OrthographicImage& image) {
     pixel_size = image.pixel_size;
     min_depth = image.min_depth;

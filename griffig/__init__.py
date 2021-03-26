@@ -12,7 +12,7 @@ from _griffig import (
 )
 
 from .griffig import Griffig
-from .grasp.grasp import Grasp
-from .utility.heatmap2 import Heatmap
+from .action.grasp import Grasp
+from .utility.heatmap import Heatmap
 from .utility.model_data import ModelData, ModelArchitecture
 from .utility.model_library import ModelLibrary

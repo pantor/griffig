@@ -2,6 +2,7 @@
 
 #include <limits>
 #include <optional>
+#include <vector>
 
 #include <affx/affine.hpp>
 
@@ -21,4 +22,12 @@ struct Gripper {
     explicit Gripper(const affx::Affine& robot_to_tip, const std::optional<std::array<double, 2>>& width_interval, const std::optional<std::array<double, 3>>& finger_size): robot_to_tip(robot_to_tip), width_interval(width_interval), finger_size(finger_size) { }
     explicit Gripper(double min_stroke = 0.0, double max_stroke = std::numeric_limits<double>::infinity(), double width = 0.0, double height = 0.0, affx::Affine robot_to_tip = affx::Affine()):
         min_stroke(min_stroke), max_stroke(max_stroke), width(width), height(height), robot_to_tip(robot_to_tip) { }
+
+    std::vector<bool> consider_indices(const std::vector<double>& gripper_widths) {
+        std::vector<bool> result (gripper_widths.size());
+        for (size_t i = 0; i < gripper_widths.size(); ++i) {
+            result[i] = (min_stroke <= gripper_widths[i] && gripper_widths[i] <= max_stroke);
+        }
+        return result;
+    }
 };

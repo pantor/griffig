@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 
-from ..utility.image2 import crop
+from ..utility.image import crop
 
 
 class Converter:

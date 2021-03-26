@@ -37,7 +37,8 @@ PYBIND11_MODULE(_griffig, m) {
         .def_readwrite("min_stroke", &Gripper::min_stroke)
 	    .def_readwrite("max_stroke", &Gripper::max_stroke)
 	    .def_readwrite("width", &Gripper::width)
-	    .def_readwrite("height", &Gripper::height);
+	    .def_readwrite("height", &Gripper::height)
+        .def("consider_indices", &Gripper::consider_indices);
 
     py::class_<OrthographicData>(m, "OrthographicData")
         .def(py::init<double, double, double>(), "pixel_density"_a, "min_depth"_a, "max_depth"_a)
@@ -46,7 +47,7 @@ PYBIND11_MODULE(_griffig, m) {
         .def_readwrite("max_depth", &OrthographicData::max_depth);
 
     py::class_<OrthographicImage>(m, "OrthographicImage")
-        .def(py::init<const cv::Mat&, double, double, double, const std::optional<std::string>&, const std::optional<Affine>&>(), "mat"_a, "pixel_size"_a, "min_depth"_a, "max_depth"_a, "camera"_a=std::nullopt, "pose"_a=std::nullopt)
+        .def(py::init<const cv::Mat&, double, double, double, const std::optional<std::string>&, const Affine&>(), "mat"_a, "pixel_size"_a, "min_depth"_a, "max_depth"_a, "camera"_a=std::nullopt, "pose"_a=Affine())
         .def_readwrite("mat", &OrthographicImage::mat)
         .def_readwrite("pixel_size", &OrthographicImage::pixel_size)
         .def_readwrite("min_depth", &OrthographicImage::min_depth)

@@ -3,49 +3,22 @@ from pathlib import Path
 import cv2
 import numpy as np
 from scipy.ndimage import gaussian_filter
-import tensorflow.keras as tk
 
 from pyaffx import Affine
-from ..grasp.grasp import Grasp
+from ..action.grasp import Grasp
 from _griffig import BoxData, Gripper, OrthographicImage
-from ..utility.image2 import draw_around_box, get_box_projection, get_inference_image
+from ..infer.inference import Inference
+from ..infer.selection import Method, Max
+from ..utility.image import draw_around_box2, get_box_projection, get_inference_image
 
 
-class InferencePlanar:
-    def __init__(self, model_data, converter, gaussian_sigma=None, seed=None, debug=False):
-        self.model = self._load_model(model_data.path, 'grasp')
-        self.debug = debug
-
-        self.size_area_cropped = model_data.size_area_cropped
-        self.size_result = model_data.size_result
-        self.scale_factors = (self.size_area_cropped[0] / self.size_result[0], self.size_area_cropped[1] / self.size_result[1])
-
-        self.a_space = np.linspace(-np.pi/2 + 0.05, np.pi/2 - 0.05, 20)  # [rad] # Don't use a=0.0 -> even number
-        self.keep_indixes = None
-        self.gaussian_sigma = gaussian_sigma
-
-        self.converter = converter
-
-    def _load_model(self, path: Path, submodel=None):
-        model = tk.models.load_model(path, compile=False)
-
-        if submodel:
-            model = model.get_layer(submodel)
-        return model
-
-    def _get_size_cropped(self, image, box_data: BoxData):
-        box_projection = get_box_projection(image, box_data)
-        center = np.array([image.mat.shape[1], image.mat.shape[0]]) / 2
-        farthest_corner = np.max(np.linalg.norm(box_projection - center, axis=1))
-        side_length = int(np.ceil(2 * farthest_corner * self.size_result[0] / self.size_area_cropped[0]))
-        return (side_length, side_length)
-
+class InferencePlanar(Inference):
     def get_input_images(self, orig_image, box_data: BoxData):
         image = orig_image.clone()
         size_cropped = self._get_size_cropped(orig_image, box_data)
 
         if box_data:
-            draw_around_box(image, box_data)
+            draw_around_box2(image, box_data)
 
         result_ = []
 
@@ -54,7 +27,7 @@ class InferencePlanar:
                 get_inference_image(image, Affine(a=a), size_cropped, self.size_area_cropped, self.size_result, return_mat=True)
             )
 
-        if self.debug:
+        if self.verbose:
             cv2.imwrite('/tmp/inf.png', result_[10][:, :, 3])
 
         result = np.array(result_, dtype=np.float32) / np.iinfo(image.mat.dtype).max
@@ -70,10 +43,6 @@ class InferencePlanar:
             a=self.a_space[index[0]],
         ).inverse()
 
-    @classmethod
-    def set_last_dim_to_zero(cls, array, indixes):
-        array[:, :, :, indixes] = 0
-
     def infer(self, method, image, box_data: BoxData = None, gripper: Gripper = None):
         input_images = self.get_input_images(image, box_data)
         estimated_reward = self.model.predict(input_images, batch_size=128)
@@ -83,7 +52,7 @@ class InferencePlanar:
                 estimated_reward[i] = gaussian_filter(estimated_reward[i], self.gaussian_sigma)
 
         if gripper:
-            possible_indices = self.converter.consider_indices(gripper)
+            possible_indices = gripper.consider_indices(self.model_data.gripper_widths)
             self.set_last_dim_to_zero(estimated_reward, np.invert(possible_indices))
 
         for _ in range(estimated_reward.size):

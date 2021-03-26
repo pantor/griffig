@@ -3,8 +3,8 @@ from typing import Any, List, Sequence, Tuple, Optional, Union
 import cv2
 import numpy as np
 
+from _griffig import BoxData, Gripper, RobotPose, OrthographicImage
 from pyaffx import Affine
-from _griffig import RobotPose, OrthographicImage, BoxData
 
 
 def crop(mat_image: Any, size_output: Sequence[float], vec=(0, 0)) -> Any:
@@ -210,3 +210,63 @@ def draw_pose(image: OrthographicImage, action_pose: RobotPose, convert_to_rgb=F
         color_calibration = (255, 255, 255)
         draw_line(image, action_pose, Affine(0, -0.1), Affine(0, 0.1), color_calibration, line_thickness)
         draw_line(image, action_pose, Affine(-0.1, 0), Affine(0.1, 0), color_calibration, line_thickness)
+
+
+def draw_around_box2(image, box_data: BoxData, draw_lines=False):
+    if not box_data:
+        return
+
+    assert box_data, 'Box contour should be drawn, but is false.'
+
+    box_border = [Affine(*p) for p in box_data.contour]
+    image_border = [Affine(*p) for p in _get_rect_contour([0.0, 0.0, 0.0], [10.0, 10.0, box_data.contour[0][2]])]
+    box_projection = [image.project(p) for p in box_border]
+
+    color_multiplier = 1. / 255 if image.mat.dtype == np.float32 else np.iinfo(image.mat.dtype).max / 255
+
+    if draw_lines:
+        number_channels = image.mat.shape[-1] if len(image.mat.shape) > 2 else 1
+        color = np.array([255 * color_multiplier] * number_channels)  # White
+        cv2.polylines(image.mat, [np.asarray(box_projection)], True, color, 2, lineType=cv2.LINE_AA)
+
+    else:
+        color_array = np.array([image.mat[np.clip(p[1], 0, image.mat.shape[0] - 1), np.clip(p[0], 0, image.mat.shape[1] - 1)] for p in box_projection], dtype=np.float32)
+        if len(color_array.shape) > 1:
+            color_array[np.mean(color_array, axis=1) < color_multiplier] = np.nan
+        else:
+            color_array[color_array < color_multiplier] = np.nan
+
+        color = np.nanmean(color_array, axis=0)
+        np.nan_to_num(color, copy=False)
+
+        image_border_projection = [image.project(p) for p in image_border]
+        cv2.fillPoly(image.mat, np.array([image_border_projection, box_projection]), color.tolist())
+
+
+def draw_pose2(image, grasp, gripper: Gripper, convert_to_rgb=False):
+    if convert_to_rgb and image.mat.ndim == 2:
+        image.mat = cv2.cvtColor(image.mat, cv2.COLOR_GRAY2RGB)
+
+    color_rect = (255, 0, 0)  # Blue
+    color_lines = (0, 0, 255)  # Red
+    color_direction = (0, 255, 0)  # Green
+
+    rect = [Affine(*p) for p in _get_rect_contour([0.0, 0.0, 0.0], [200.0 / image.pixel_size, 200.0 / image.pixel_size, 0.0])]
+
+    draw_polygon(image, grasp.pose, rect, color_rect, 2)
+    draw_line(image, grasp.pose, Affine(90 / image.pixel_size, 0), Affine(100 / image.pixel_size, 0), color_rect, 2)
+    
+    half_width = gripper.width / 2
+    
+    draw_line(image, grasp.pose, Affine(half_width, grasp.stroke / 2), Affine(-half_width, grasp.stroke / 2), color_lines, 1)
+    draw_line(image, grasp.pose, Affine(half_width, -grasp.stroke / 2), Affine(-half_width, -grasp.stroke / 2), color_lines, 1)
+    
+    half_width_height = half_width + gripper.height
+    draw_line(image, grasp.pose, Affine(half_width_height, grasp.stroke / 2), Affine(-half_width_height, grasp.stroke / 2), color_lines, 1)
+    draw_line(image, grasp.pose, Affine(half_width_height, -grasp.stroke / 2), Affine(-half_width_height, -grasp.stroke / 2), color_lines, 1)
+
+    draw_line(image, grasp.pose, Affine(0, grasp.stroke / 2), Affine(0, -grasp.stroke / 2), color_lines, 1)
+    draw_line(image, grasp.pose, Affine(0.006, 0), Affine(-0.006, 0), color_lines, 1)
+
+    if False and not isinstance(grasp.pose.z, str) and np.isfinite(grasp.pose.z):
+        draw_line(image, grasp.pose, Affine(z=0.14), Affine(), color_direction, 1)

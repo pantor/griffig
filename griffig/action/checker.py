@@ -4,7 +4,7 @@ import numpy as np
 from pyaffx import Affine
 from .grasp import Grasp
 from _griffig import BoxData, Gripper, OrthographicImage
-from ..utility.image2 import get_area_of_interest
+from ..utility.image import get_area_of_interest
 
 
 class Checker:
