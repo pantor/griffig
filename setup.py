@@ -43,7 +43,7 @@ class CMakeBuild(build_ext):
 
         # Pile all .so in one place and use $ORIGIN as RPATH
         cmake_args = ['-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=' + extdir]
-        cmake_args += ['-DPYBIND11_TEST=OFF']
+        # cmake_args += ['-DPYBIND11_TEST=OFF']
         cmake_args += ['-DCMAKE_BUILD_WITH_INSTALL_RPATH=TRUE']
         cmake_args += ['-DCMAKE_INSTALL_RPATH={}'.format('$ORIGIN')]
         cmake_args += ['-DCMAKE_BUILD_TYPE=' + build_type]
@@ -60,7 +60,7 @@ class CMakeBuild(build_ext):
 setup(
     name='griffig',
     version='0.0.1',
-    description='t',
+    description='Robotic grasping',
     long_description=long_description,
     long_description_content_type='text/markdown',
     author='Lars Berscheid',
@@ -68,7 +68,7 @@ setup(
     url='https://github.com/pantor/griffig',
     packages=find_packages(),
     license='LGPL',
-    ext_modules=[CMakeExtension('_griffig')],
+    ext_modules=[CMakeExtension('_griffig'), CMakeExtension('pyaffx')],
     cmdclass=dict(build_ext=CMakeBuild),
     keywords=['robot', 'robotics', 'grasping', 'robot-learning'],
     classifiers=[
@@ -77,6 +77,14 @@ setup(
         'Topic :: Software Development :: Build Tools',
         'License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)',
         'Programming Language :: C++',
+    ],
+    install_requires=[
+        'loguru',
+        'tensorflow==2.4.0',
+        'opencv-python',
+        # 'numpy',
+        'scipy==1.5.4',
+        'Pillow',
     ],
     python_requires='>=3.6',
 )

@@ -5,3 +5,7 @@ __pycache__
 *.pyc
 
 test/data
+
+dist
+*.egg-info
+wheels
