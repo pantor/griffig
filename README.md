@@ -1,5 +1,5 @@
 <div align="center">
-  <h1 align="center">Griffig</h1>
+  <h1 align="center">OpenGriffig</h1>
   <h3 align="center">
     Robotic Grasping Learned from Imitation and Self-Supervision.
   </h3>
@@ -31,7 +31,6 @@ pointcloud = Pointcloud.fromRealsense(camera.record_pointcloud())
 griffig = Griffig(
     model='two-finger',  # Use the default model for a two-finger gripper
     gripper=Gripper(  # Some information about the gripper
-        robot_to_tip=Affine(x=0.2),  # Transformation between robot's end-effector and finger tips [m]
         min_stroke=0.01, # [m]
         max_stroke=0.10, # [m], to limit pre-shaped width
     ),
@@ -41,7 +40,7 @@ griffig = Griffig(
 grasp = griffig.calculate_grasp(pointcloud, camera_pose=camera_pose)  # Get grasp in the global frame using the camera pose
 
 # Make use of the grasp here!
-print(f'Grasp at {grasp.pose} with probability {grasp.reward})
+print(f'Grasp at {grasp.pose} with probability {grasp.estimated_reward})
 
 # Show the heatmap as PIL image
 heatmap = griffig.calculate_heatmap()
@@ -68,7 +67,6 @@ We use the gripper class for collision checks.
 
 ```python
 gripper = Gripper(
-    robot_to_tip=Affine(),  # Transformation between robot's end-effector and finger tips [m]
     min_stroke=0.01, # [m]
     max_stroke=0.10, # [m], pre-shaped width
     finger_size=(0.01, 0.01, 0.1),  # Size of a bounding box for optional collision check [m]
@@ -140,7 +138,7 @@ robot.close_gripper()
 ```
 
 
-### Development
+## Development
 
 Griffig is written in C++17 and Python 3.7. It is tested against following dependency versions:
 
@@ -149,6 +147,6 @@ Griffig is written in C++17 and Python 3.7. It is tested against following depen
 - PyBind11 2.6
 
 
-### License
+## License
 
 Griffig is licensed under LGPL for non-commercial usage.
