@@ -40,12 +40,6 @@ PYBIND11_MODULE(_griffig, m) {
 	    .def_readwrite("height", &Gripper::height)
         .def("consider_indices", &Gripper::consider_indices);
 
-    py::class_<OrthographicData>(m, "OrthographicData")
-        .def(py::init<double, double, double>(), "pixel_density"_a, "min_depth"_a, "max_depth"_a)
-        .def_readwrite("pixel_density", &OrthographicData::pixel_density)
-        .def_readwrite("min_depth", &OrthographicData::min_depth)
-        .def_readwrite("max_depth", &OrthographicData::max_depth);
-
     py::class_<OrthographicImage>(m, "OrthographicImage")
         .def(py::init<const cv::Mat&, double, double, double, const std::optional<std::string>&, const Affine&>(), "mat"_a, "pixel_size"_a, "min_depth"_a, "max_depth"_a, "camera"_a=std::nullopt, "pose"_a=Affine())
         .def_readwrite("mat", &OrthographicImage::mat)
@@ -99,7 +93,7 @@ PYBIND11_MODULE(_griffig, m) {
 
 	        py::buffer_info info(py::buffer((py::bytes)data).request());
 	        return std::make_unique<Pointcloud>(static_cast<size_t>(info.size) / point_size, type, info.ptr);
-	  
+
         }), py::kw_only(), "realsense_frames"_a=py::none(), "ros_message"_a=py::none(), "type"_a=PointType::XYZWRGBA, "data"_a=py::none())
         .def_readonly("size", &Pointcloud::size)
         .def_readonly("point_type", &Pointcloud::point_type);
@@ -141,7 +135,7 @@ PYBIND11_MODULE(_griffig, m) {
         .def(py::init<const std::array<double, 2>&, double, double, const std::optional<BoxData>&>(), "size"_a, "pixel_size"_a, "depth_diff"_a, "contour"_a = std::nullopt)
         .def(py::init<const std::array<double, 2>&, const std::array<double, 3>&>(), "size"_a, "position"_a)
         .def(py::init<const BoxData&, double, double, double>(), "box_data"_a, "typical_camera_distance"_a, "pixel_size"_a, "depth_diff"_a)
-        .def("draw_pointcloud", &Renderer::draw_pointcloud<true>, "pointcloud"_a, "ortho"_a, "camera_position"_a = (std::array<double, 3>){0.0, 0.0, 0.0})
+        .def("draw_pointcloud", &Renderer::draw_pointcloud<true>, "pointcloud"_a, "pixel_size"_a, "min_depth"_a, "max_depth"_a, "camera_position"_a = (std::array<double, 3>){0.0, 0.0, 0.0})
         .def("draw_depth_pointcloud", &Renderer::draw_pointcloud<false>)
         .def("draw_gripper_on_image", &Renderer::draw_gripper_on_image, "image"_a, "gripper"_a, "pose"_a)
         .def("draw_box_on_image", &Renderer::draw_box_on_image, "image"_a)

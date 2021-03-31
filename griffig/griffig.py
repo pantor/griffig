@@ -5,7 +5,7 @@ import numpy as np
 from PIL import Image
 
 from pyaffx import Affine
-from _griffig import BoxData, Renderer, Gripper, Pointcloud, OrthographicData
+from _griffig import BoxData, Renderer, Gripper, Pointcloud
 from .action.checker import Checker
 from .infer.inference_actor_critic import InferenceActorCritic
 from .infer.inference_planar import InferencePlanar
@@ -58,7 +58,7 @@ class Griffig:
         return grasp
 
     def render(self, pointcloud: Pointcloud, pixel_size, min_depth, max_depth, size=(752, 480), position=[0.0, 0.0, 0.0]):
-        img = self.renderer.draw_pointcloud(pointcloud, size, OrthographicData(pixel_size, min_depth, max_depth), position)
+        img = self.renderer.draw_pointcloud(pointcloud, size, pixel_size, min_depth, max_depth, position)
         return Image.fromarray((img[:, :, :3] / 255).astype(np.uint8))
 
     def report_grasp_failure(self):

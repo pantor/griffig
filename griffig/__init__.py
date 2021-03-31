@@ -3,7 +3,6 @@ from pyaffx import Affine
 from _griffig import (
     BoxData,
     Gripper,
-    OrthographicData,
     OrthographicImage,
     PointType,
     Pointcloud,

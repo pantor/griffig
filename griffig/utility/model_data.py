@@ -24,6 +24,10 @@ class ModelData:
         description: str = None,
         size_area_cropped = None,
         size_result = None,
+        task = None,
+        input = None,
+        input_type = None,
+        output = None,
     ):
         self.name = name
         self.path = path
@@ -34,6 +38,10 @@ class ModelData:
         self.description = description
         self.size_area_cropped = size_area_cropped
         self.size_result = size_result
+        self.task = task
+        self.input = input
+        self.input_type = input_type
+        self.output = output
 
     def to_dict(self):
         return self.__dict__
@@ -44,4 +52,4 @@ class ModelData:
     #         model_data = ModelData(**json.load(read_file))
     #         model_data.path = path.parent / model_data.path
     #     return model_data
-    
+

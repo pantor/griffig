@@ -16,14 +16,6 @@
 #include <griffig/robot_pose.hpp>
 
 
-struct OrthographicData {
-    double pixel_density;
-    double min_depth;
-    double max_depth;
-
-    OrthographicData(double pixel_density, double min_depth, double max_depth): pixel_density(pixel_density), min_depth(min_depth), max_depth(max_depth) { }
-};
-
 
 class Renderer {
     using Affine = affx::Affine;
@@ -44,7 +36,7 @@ class Renderer {
             glfwTerminate();
         }
     };
-    
+
     void draw_affines(const std::array<Affine, 4>& affines) {
         for (auto affine: affines) {
             glVertex3d(-affine.y(), affine.x(), -affine.z());
@@ -120,6 +112,8 @@ public:
     std::optional<BoxData> box_contour;
     std::array<double, 3> camera_position {0.0, 0.0, 0.0};
 
+    explicit Renderer() { }
+
     explicit Renderer(const std::array<double, 2>& size, double pixel_size, double depth_diff, const std::optional<BoxData>& box_contour): width(size[0]), height(size[1]), pixel_size(pixel_size), depth_diff(depth_diff), box_contour(box_contour) {
         app = std::make_unique<Window>(width, height, "");
     }
@@ -177,7 +171,7 @@ public:
     }
 
     template<bool draw_texture>
-    cv::Mat draw_pointcloud(const Pointcloud& cloud, const OrthographicData& ortho, const std::array<double, 3>& camera_position) {
+    cv::Mat draw_pointcloud(const Pointcloud& cloud, double pixel_density, double min_depth, double max_depth, const std::array<double, 3>& camera_position) {
         cv::Size cv_size {(int)width, (int)height};
         cv::Mat color = cv::Mat::zeros(cv_size, CV_16UC4);
         cv::Mat depth = cv::Mat::zeros(cv_size, CV_32FC1);
@@ -194,10 +188,10 @@ public:
         glEnable(GL_DEPTH_TEST);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        const double alpha = 1.0 / (2 * ortho.pixel_density);
+        const double alpha = 1.0 / (2 * pixel_density);
         glMatrixMode(GL_PROJECTION);
         glPushMatrix();
-        glOrtho(alpha * cv_size.width, -alpha * cv_size.width, -alpha * cv_size.height, alpha * cv_size.height, ortho.min_depth, ortho.max_depth);
+        glOrtho(alpha * cv_size.width, -alpha * cv_size.width, -alpha * cv_size.height, alpha * cv_size.height, min_depth, max_depth);
 
         glMatrixMode(GL_MODELVIEW);
         glPushMatrix();
