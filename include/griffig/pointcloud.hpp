@@ -37,11 +37,16 @@ class Texture {
     GLuint gl_handle {0};
 
 public:
-    void upload(size_t width, size_t height, const void* data) {
-        if (!gl_handle) {
-            glGenTextures(1, &gl_handle);
-        }
+    explicit Texture() {
+        glGenTextures(1, &gl_handle);
+    }
 
+    ~Texture() {
+        glFinish();
+        glDeleteTextures(1, &gl_handle);
+    }
+
+    void upload(size_t width, size_t height, const void* data) {
         glBindTexture(GL_TEXTURE_2D, gl_handle);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
 
