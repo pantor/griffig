@@ -132,6 +132,7 @@ PYBIND11_MODULE(_griffig, m) {
         });
 
     py::class_<Renderer>(m, "Renderer")
+        .def(py::init<const std::array<double, 2>&>(), "size"_a)
         .def(py::init<const std::array<double, 2>&, double, double, const std::optional<BoxData>&>(), "size"_a, "pixel_size"_a, "depth_diff"_a, "contour"_a = std::nullopt)
         .def(py::init<const std::array<double, 2>&, const std::array<double, 3>&>(), "size"_a, "position"_a)
         .def(py::init<const BoxData&, double, double, double>(), "box_data"_a, "typical_camera_distance"_a, "pixel_size"_a, "depth_diff"_a)

@@ -5,6 +5,7 @@ from ..infer.inference_planar import InferencePlanar
 from ..infer.inference_actor_critic import InferenceActorCritic
 from _griffig import BoxData, OrthographicImage
 from ..utility.image import draw_line
+from pyaffx import Affine
 
 
 class Heatmap:
@@ -31,33 +32,54 @@ class Heatmap:
         norm = (5 * heat_values.max() + len(a_space_idx)) / 6
         return (heat_values / norm * 255.0).astype(np.uint8)
 
+    @staticmethod
+    def get_background(image, use_rgb):
+        if len(image.mat.shape) >= 3 and image.mat.shape[-1] >= 3:
+            if use_rgb:
+                back = cv2.cvtColor(image.mat[:, :, :3], cv2.COLOR_RGB2GRAY)
+                return cv2.cvtColor(back, cv2.COLOR_GRAY2RGB)
+
+            return cv2.cvtColor(image.mat[:, :, 3:], cv2.COLOR_GRAY2RGB)
+
+        return cv2.cvtColor(image.mat, cv2.COLOR_GRAY2RGB)
+
     def render(
             self,
             image: OrthographicImage,
             goal_image: OrthographicImage = None,
             box_data: BoxData = None,
-            alpha=0.4,
-            use_rgb=True,
+            alpha=0.5,
+            use_rgb=True,  # Otherwise depth
             save_path=None,
             reward_index=None,
-            draw_directions=False,
-            indices=None,
+            draw_lateral=False,
+            draw_shifts=False,
+            draw_indices=None,
+            alpha_human=0.0,
         ):
-        # inputs = self.inference.transform_for_prediction({'rcd': image}, box_data=box_data)
-        input_images = self.inference.get_input_images(image, box_data)
+        input_images = self.inference.transform_for_prediction({'rcd': image}, box_data=box_data)
+        # input_images = self.inference.get_input_images(image, box_data)
 
         if goal_image:
-            # inputs += self.inference.transform_for_prediction({'rcd': goal_image}, box_data=box_data)
-            input_images += self.inference.get_input_images(goal_image, box_data)
+            input_images += self.inference.transform_for_prediction({'rcd': goal_image}, box_data=box_data)
+            # input_images += self.inference.get_input_images(goal_image, box_data)
 
         if isinstance(self.inference, InferenceActorCritic):
-            estimated_reward, actor_result = self.inference.model.predict(inputs, batch_size=128)
+            print(self.inference.model)
+            estimated_reward, actor_result = self.inference.model.predict(input_images, batch_size=128)
+            print(estimated_reward.shape)
 
         else:
-            estimated_reward = self.inference.model.predict(inputs, batch_size=128)
+            estimated_reward = self.inference.model.predict(input_images, batch_size=128)
+            actor_result = None
 
         if reward_index is not None:
             estimated_reward = estimated_reward[reward_index]
+
+        if self.inference.model_data.output[0] == 'reward+human':
+            print(estimated_reward.shape)
+
+            estimated_reward = (1 - alpha_human) * estimated_reward[:, :, :, :4] + alpha_human * estimated_reward[:, :, :, 4:]
 
         # reward_reduced = np.maximum(estimated_reward, 0)
         reward_reduced = np.mean(estimated_reward, axis=3)
@@ -69,25 +91,23 @@ class Heatmap:
         heat = self.calculate_heat(reward_reduced, size_cropped, size_result)
         heat = cv2.applyColorMap(heat, cv2.COLORMAP_JET)
 
-        if len(image.mat.shape) >= 3 and image.mat.shape[-1] >= 3:
-            if use_rgb:
-                back = cv2.cvtColor(image.mat[:, :, :3], cv2.COLOR_RGB2GRAY)
-                back = cv2.cvtColor(back, cv2.COLOR_GRAY2RGB)
-            else:
-                back = cv2.cvtColor(image.mat[:, :, 3:], cv2.COLOR_GRAY2RGB)
-        else:
-            back = cv2.cvtColor(image.mat, cv2.COLOR_GRAY2RGB)
-        
-        result = (1 - alpha) * back + alpha * heat
-        result = OrthographicImage(result, image.pixel_size, image.min_depth, image.max_depth)
+        result = (1 - alpha) * self.get_background(image, use_rgb) + alpha * heat
+        result = OrthographicImage(result.astype(np.float32), image.pixel_size, image.min_depth, image.max_depth)
 
-        if indices is not None:
-            self.draw_indices(result, reward, indices)
+        if draw_indices is not None:
+            self.draw_indices(result, reward_reduced, draw_indices)
 
-        if draw_directions:
+        if draw_lateral:
             for _ in range(10):
-                self.draw_shift_arrow(result, reward, np.unravel_index(reward.argmax(), reward.shape))
-                reward[np.unravel_index(reward.argmax(), reward.shape)] = 0
+                index = np.unravel_index(estimated_reward.argmax(), estimated_reward.shape)
+                action = actor_result[index[0], index[1], index[2]]
+                self.draw_lateral(result, estimated_reward.shape, index, action)
+                estimated_reward[np.unravel_index(estimated_reward.argmax(), estimated_reward.shape)] = 0
+
+        if draw_shifts:
+            for _ in range(10):
+                self.draw_shift_arrow(result, reward_reduced, np.unravel_index(reward_reduced.argmax(), reward_reduced.shape))
+                reward_reduced[np.unravel_index(reward_reduced.argmax(), reward_reduced.shape)] = 0
 
         if save_path:
             cv2.imwrite(str(save_path), result.mat)
@@ -123,12 +143,17 @@ class Heatmap:
                 back = cv2.cvtColor(image.mat[:, :, 3:], cv2.COLOR_GRAY2RGB)
         else:
             back = cv2.cvtColor(image.mat, cv2.COLOR_GRAY2RGB)
-        
+
         result = (1 - alpha) * back + alpha * heat
         if return_mat:
             return result
 
         return result
+
+    def draw_lateral(self, image: OrthographicImage, reward_shape, index, action):
+        pose = self.inference.pose_from_index(index, reward_shape, image)
+        arrow_color = (255*255, 255*255, 255*255)
+        draw_line(image, pose, Affine(0.0, 0.0), Affine(a=pose.a, b=action[1], c=action[2]) * Affine(0.0, 0.0, -0.14), color=arrow_color, thickness=1)
 
     def draw_indices(self, image: OrthographicImage, reward_shape, indices):
         point_color = (255, 255, 255)

@@ -46,6 +46,9 @@ class Griffig:
 
     def calculate_grasp(self, camera_pose, pointcloud, box_data=None, method=None):
         image = self.renderer.render(pointcloud, camera_pose, box_data=box_data)
+        return self.calculate_grasp_from_image(image, method=method)
+
+    def calculate_grasp_from_image(self, image, box_data=None, method=None):
         selection_method = method if method else (Max() if self.last_grasp_successful else Top(5))
 
         action_generator = self.inference.infer(image, selection_method)

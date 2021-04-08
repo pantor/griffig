@@ -1,5 +1,5 @@
 <div align="center">
-  <h1 align="center">OpenGriffig</h1>
+  <h1 align="center">Griffig</h1>
   <h3 align="center">
     Robotic Grasping Learned from Imitation and Self-Supervision.
   </h3>
