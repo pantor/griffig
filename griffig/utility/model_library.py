@@ -1,32 +1,49 @@
 import json
 from pathlib import Path
+from typing import Union
+from urllib.request import urlopen
+from tempfile import NamedTemporaryFile
+from shutil import unpack_archive
+
+import requests
+
 from .model_data import ModelArchitecture, ModelData
 
 
 class ModelLibrary:
-    remote_models = [
-        ModelData(
-            name='two-finger',
-            path='https://<...>',
-            architecture=ModelArchitecture.ActorCritic,
-            pixel_size=2000.0,
-            depth_diff=0.19,
-            gripper_widths=[0.025, 0.05, 0.07, 0.086],
-            description='Trained on a parallel, two-finger gripper (gripper jaws downloadable at ...). Bin picking scenario with various small and light objects (< 10cm).',
-        ),
-    ]
+    remote_url = 'http://46.101.236.109/models/'
+    tmp_path = Path('/tmp') / 'griffig-models'
 
     @classmethod
-    def load_model_data(cls, name: str, local_path: Path = None) -> ModelData:
-        if local_path:
-            with open(local_path + '{}.json'.format(name), 'r') as read_file:
-                model_data = ModelData(**json.load(read_file))
-                model_data.path = local_path + model_data.path
-            return model_data
-            # return ModelData.from_json(local_path + '{}.json'.format(name))
+    def load_model_data(cls, name: Union[str, Path]) -> ModelData:
+        model_path = name
 
-        model_data = next((x for x in cls.remote_models if x.name == name), None)
-        if not model_data:
-            raise Exception(f'Model {name} not found!')
+        if isinstance(model_path, str):
+            model_path = cls.tmp_path / name
 
+            if not model_path.exists():
+                print(f'Download model file to {model_path}...')
+
+                try:
+                    r = requests.get(url=cls.remote_url + name, timeout=1.0)  # [s]
+                except requests.exceptions.Timeout as e:
+                    raise Exception('Could not search for model, please use a local model via a Path input.') from e
+
+                if r.status_code == 404:
+                    raise Exception(f'Model {name} not found!')
+
+                model_remote_url = r.json()['path']
+
+                model_path.mkdir(parents=True, exist_ok=True)
+                with urlopen(model_remote_url) as zipresp, NamedTemporaryFile() as tfile:
+                    tfile.write(zipresp.read())
+                    tfile.seek(0)
+                    unpack_archive(tfile.name, model_path, format='zip')
+
+            else:
+                print(f'Found model file at {model_path}')
+
+        with open(model_path / 'model-data.json', 'r') as read_file:
+            model_data = ModelData(**json.load(read_file))
+            model_data.path = model_path / model_data.path
         return model_data

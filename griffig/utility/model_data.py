@@ -1,5 +1,4 @@
 from enum import Enum
-import json
 from typing import List
 from pathlib import Path
 
@@ -28,6 +27,7 @@ class ModelData:
         input = None,
         input_type = None,
         output = None,
+        version = None,
     ):
         self.name = name
         self.path = path
@@ -42,14 +42,8 @@ class ModelData:
         self.input = input
         self.input_type = input_type
         self.output = output
+        self.version = version
 
     def to_dict(self):
         return self.__dict__
-
-    # @classmethod
-    # def from_json(cls, path: Path):
-    #     with open(path, 'r') as read_file:
-    #         model_data = ModelData(**json.load(read_file))
-    #         model_data.path = path.parent / model_data.path
-    #     return model_data
 
