@@ -5,7 +5,6 @@
 #include <iostream>
 
 #include <GL/glew.h>
-#include <GL/glut.h>
 #include <EGL/egl.h>
 #include <opencv2/opencv.hpp>
 
@@ -42,19 +41,20 @@ class Renderer {
         }
 
         EGLint const configAttribs[] = {
-            EGL_RED_SIZE, 4,
-            EGL_GREEN_SIZE, 4,
-            EGL_BLUE_SIZE, 4,
+            // EGL_RED_SIZE, 1,
+            // EGL_GREEN_SIZE, 1,
+            // EGL_BLUE_SIZE, 1,
             EGL_NONE
         };
 
         EGLint numConfigs;
         EGLConfig eglCfg;
-        if (!eglChooseConfig(eglDpy, configAttribs, &eglCfg, 1, &numConfigs)) {
+        if (!eglChooseConfig(eglDpy, configAttribs, NULL, 0, &numConfigs)) {
             std::cout << "choose config: " << eglGetError() << std::endl;
             exit(EXIT_FAILURE);
         }
 
+        // std::cout << "numConfigs: " << numConfigs << std::endl;
         eglBindAPI(EGL_OPENGL_API);
 
         EGLContext eglCtx = eglCreateContext(eglDpy, eglCfg, EGL_NO_CONTEXT, NULL);
@@ -225,9 +225,7 @@ public:
     }
 
     explicit Renderer(const std::array<double, 2>& size, const std::array<double, 3>& position): width(size[0]), height(size[1]), camera_position(position) {
-        std::cout << "2" << std::endl;
         init_egl(width, height);
-        std::cout << "3" << std::endl;
     }
 
     explicit Renderer(const BoxData& box_data, double typical_camera_distance, double pixel_size, double depth_diff): box_contour(box_data), typical_camera_distance(typical_camera_distance), pixel_size(pixel_size), depth_diff(depth_diff) {
