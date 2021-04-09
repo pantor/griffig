@@ -65,7 +65,7 @@ public:
 
 struct Pointcloud {
     size_t size {0};
-    size_t width {0}, height {0};
+    int width {0}, height {0};
 
     PointType point_type;
     const void* vertices;
@@ -75,7 +75,7 @@ struct Pointcloud {
 
     explicit Pointcloud() { }
     explicit Pointcloud(size_t size, PointType point_type, const void* vertices): size(size), point_type(point_type), vertices(vertices) { }
-    explicit Pointcloud(size_t size, size_t width, size_t height, const void* vertices, const void* texture, const void* tex_coords): size(size), point_type(PointType::XYZ), width(width), height(height), vertices(vertices), tex_coords(tex_coords) {
+    explicit Pointcloud(size_t size, int width, int height, const void* vertices, const void* texture, const void* tex_coords): size(size), point_type(PointType::XYZ), width(width), height(height), vertices(vertices), tex_coords(tex_coords) {
         tex.upload(width, height, texture);
     }
 };

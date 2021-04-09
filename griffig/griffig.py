@@ -44,7 +44,7 @@ class Griffig:
 
         image_size = box_data.get_image_size(self.model_data.pixel_size, offset=6) if box_data else (752, 480)
         self.renderer = Renderer(image_size, [0.0, 0.0, 0.0])
-        
+
         self.last_grasp_successful = True
 
     def calculate_grasp(self, camera_pose, pointcloud, box_data=None, method=None):
@@ -64,7 +64,7 @@ class Griffig:
         return grasp
 
     def render(self, pointcloud: Pointcloud, pixel_size, min_depth, max_depth, size=(752, 480), position=[0.0, 0.0, 0.0]):
-        img = self.renderer.draw_pointcloud(pointcloud, size, pixel_size, min_depth, max_depth, position)
+        img = self.renderer.render_pointcloud_mat(pointcloud, size, pixel_size, min_depth, max_depth, position)
         return Image.fromarray((img[:, :, :3] / 255).astype(np.uint8))
 
     def report_grasp_failure(self):

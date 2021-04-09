@@ -23,7 +23,7 @@ class Loader:
 if __name__ == '__main__':
     box_data = BoxData([-0.002, -0.0065, 0.372], [0.174, 0.282, 0.22 + 0.068])
     renderer = Renderer((752, 480), 2000.0, 0.19, box_data)
-    
+
     image = Loader.get_image('1')
 
     start = time()
@@ -31,5 +31,5 @@ if __name__ == '__main__':
 
     print(time() - start)
 
-    cv2.imwrite('tmp/image.png', image_drawn.mat[:, :, :3])
+    cv2.imwrite('../tmp/image.png', image_drawn.mat[:, :, :3])
     # cv2.waitKey(1500)

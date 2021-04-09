@@ -201,10 +201,8 @@ class Renderer {
         glEnd();
     }
 
-    // std::unique_ptr<Window> app;
-
 public:
-    size_t width, height;
+    int width, height;
     double pixel_size;
     double typical_camera_distance;
     double depth_diff;
@@ -216,15 +214,15 @@ public:
         init_egl(width, height);
     }
 
-    explicit Renderer(const std::array<double, 2>& size): width(size[0]), height(size[1]) {
+    explicit Renderer(const std::array<int, 2>& size): width(size[0]), height(size[1]) {
         init_egl(width, height);
     }
 
-    explicit Renderer(const std::array<double, 2>& size, double pixel_size, double depth_diff, const std::optional<BoxData>& box_contour): width(size[0]), height(size[1]), pixel_size(pixel_size), depth_diff(depth_diff), box_contour(box_contour) {
+    explicit Renderer(const std::array<int, 2>& size, double pixel_size, double depth_diff, const std::optional<BoxData>& box_contour): width(size[0]), height(size[1]), pixel_size(pixel_size), depth_diff(depth_diff), box_contour(box_contour) {
         init_egl(width, height);
     }
 
-    explicit Renderer(const std::array<double, 2>& size, const std::array<double, 3>& position): width(size[0]), height(size[1]), camera_position(position) {
+    explicit Renderer(const std::array<int, 2>& size, const std::array<double, 3>& position): width(size[0]), height(size[1]), camera_position(position) {
         init_egl(width, height);
     }
 
@@ -297,11 +295,25 @@ public:
     }
 
     OrthographicImage draw_gripper_on_image(OrthographicImage& image, const Gripper& gripper, const RobotPose& pose) {
-
+        return image;
     }
 
     template<bool draw_texture>
-    cv::Mat draw_pointcloud(const Pointcloud& cloud, double pixel_density, double min_depth, double max_depth, const std::array<double, 3>& camera_position) {
+    OrthographicImage render_pointcloud(const Pointcloud& cloud) {
+        const double min_depth = typical_camera_distance - depth_diff;
+        const double max_depth = typical_camera_distance;
+
+        return render_pointcloud<draw_texture>(cloud, pixel_size, min_depth, max_depth);
+    }
+
+    template<bool draw_texture>
+    OrthographicImage render_pointcloud(const Pointcloud& cloud, double pixel_density, double min_depth, double max_depth) {
+        cv::Mat mat = render_pointcloud_mat<draw_texture>(cloud, pixel_density, min_depth, max_depth, camera_position);
+        return OrthographicImage(mat, pixel_density, min_depth, max_depth);
+    }
+
+    template<bool draw_texture>
+    cv::Mat render_pointcloud_mat(const Pointcloud& cloud, double pixel_density, double min_depth, double max_depth, const std::array<double, 3>& camera_position) {
         cv::Size size {(int)width, (int)height};
         cv::Mat color = cv::Mat::zeros(size, CV_16UC4);
         cv::Mat depth = cv::Mat::zeros(size, CV_32FC1);
@@ -315,7 +327,14 @@ public:
         }
 
         glPushAttrib(GL_ALL_ATTRIB_BITS);
+        glEnable(GL_TEXTURE_2D);
         glEnable(GL_DEPTH_TEST);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        glBindFramebuffer(GL_FRAMEBUFFER, fb);
+
+        glViewport(0, 0, width, height);
+
+        glClearColor(0, 0, 0, 0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         const double alpha = 1.0 / (2 * pixel_density);
@@ -325,7 +344,7 @@ public:
 
         glMatrixMode(GL_MODELVIEW);
         glPushMatrix();
-        gluLookAt(camera_position[0], camera_position[1], camera_position[2], 0, 0, 1, 0, -1, 0);
+        gluLookAt(camera_position[0], camera_position[1], camera_position[2], camera_position[0], camera_position[1], 1.0, 0.0, -1.0, 0.0);
 
         if constexpr (draw_texture) {
             const float tex_border_color[] = { 0.8f, 0.8f, 0.8f, 0.8f };
@@ -339,7 +358,7 @@ public:
         }
 
         glEnable(GL_POINT_SMOOTH);
-        glPointSize((float)size.width / 640);
+        // glPointSize((float)size.width / 640);
         glBegin(GL_POINTS);
         {
             for (size_t i = 0; i < cloud.size; ++i) {
@@ -373,65 +392,5 @@ public:
         const int from_to[] = {0, 3};
         mixChannels(&depth, 1, &color, 1, from_to, 1);
         return color;
-    }
-
-    template<bool draw_texture>
-    OrthographicImage render_pointcloud_easy(const Pointcloud& cloud) {
-        const double min_depth = typical_camera_distance - depth_diff;
-        const double max_depth = typical_camera_distance;
-
-        return render_pointcloud<draw_texture>(cloud, pixel_size, min_depth, max_depth);
-    }
-
-    template<bool draw_texture>
-    OrthographicImage render_pointcloud(const Pointcloud& cloud, double pixel_density, double min_depth, double max_depth) {
-        const cv::Size size {(int)width, (int)height};
-        cv::Mat color = cv::Mat::zeros(size, CV_16UC4);
-        cv::Mat depth = cv::Mat::zeros(size, CV_32FC1);
-
-        if (cloud.size == 0) {
-            return OrthographicImage(color, pixel_density, min_depth, max_depth);
-        }
-
-        glLoadIdentity();
-        glPushAttrib(GL_ALL_ATTRIB_BITS);
-        glEnable(GL_DEPTH_TEST);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        const double alpha = 1.0 / (2 * pixel_density);
-        glMatrixMode(GL_PROJECTION);
-        glPushMatrix();
-        glOrtho(alpha * width, -alpha * width, -alpha * height, alpha * height, min_depth, max_depth);
-
-        glMatrixMode(GL_MODELVIEW);
-        glPushMatrix();
-        gluLookAt(camera_position[0], camera_position[1], camera_position[2], camera_position[0], camera_position[1], 1.0, 0.0, -1.0, 0.0);
-
-        glEnable(GL_POINT_SMOOTH);
-        glBegin(GL_POINTS);
-        {
-            for (size_t i = 0; i < cloud.size; ++i) {
-                glVertex3fv(&((PointTypes::XYZWRGBA *)cloud.vertices + i)->x);
-                glColor3ubv(&((PointTypes::XYZWRGBA *)cloud.vertices + i)->r);
-            }
-        }
-        glEnd();
-
-        glPopMatrix();
-        glMatrixMode(GL_PROJECTION);
-        glPopMatrix();
-        glPopAttrib();
-
-        glPixelStorei(GL_PACK_ALIGNMENT, (color.step & 3) ? 1 : 4);
-        glReadPixels(0, 0, depth.cols, depth.rows, GL_DEPTH_COMPONENT, GL_FLOAT, depth.data);
-
-        depth = (1 - depth) * 255 * 255;
-        depth.convertTo(depth, CV_16U);
-
-        glReadPixels(0, 0, color.cols, color.rows, GL_RGBA, GL_UNSIGNED_SHORT, color.data);
-
-        const int from_to[] = {0, 3};
-        mixChannels(&depth, 1, &color, 1, from_to, 1);
-        return OrthographicImage(color, pixel_density, min_depth, max_depth);
     }
 };
