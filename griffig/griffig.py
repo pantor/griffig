@@ -58,7 +58,7 @@ class Griffig:
         grasp = self.checker.find_grasp(action_generator)
 
         if self.gripper:
-            grasp.pose = grasp.pose * self.gripper.robot_to_tip
+            grasp.pose = grasp.pose * self.gripper.offset
 
         self.last_grasp_successful = True
         return grasp

@@ -8,22 +8,20 @@
 
 
 struct Gripper {
-    //! Transformation from end-effector to the fingertips
-    affx::Affine robot_to_tip {};
-
     //! The min. and max. gripper width (distance between fingers)
-    std::optional<std::array<double, 2>> width_interval;
     double min_stroke {0.0}, max_stroke {std::numeric_limits<double>::infinity()};
 
     //! A box around each finger
-    std::optional<std::array<double, 3>> finger_size;
-    double width, height;
+    double finger_width, finger_extent, finger_height;
+    // std::array<double, 3> box_around_finger {0.0, 0.0, 0.0};
 
-    explicit Gripper(const affx::Affine& robot_to_tip, const std::optional<std::array<double, 2>>& width_interval, const std::optional<std::array<double, 3>>& finger_size): robot_to_tip(robot_to_tip), width_interval(width_interval), finger_size(finger_size) { }
-    explicit Gripper(double min_stroke = 0.0, double max_stroke = std::numeric_limits<double>::infinity(), double width = 0.0, double height = 0.0, affx::Affine robot_to_tip = affx::Affine()):
-        min_stroke(min_stroke), max_stroke(max_stroke), width(width), height(height), robot_to_tip(robot_to_tip) { }
+    //! Offset transformation (local in the grippers reference frame)
+    affx::Affine offset {};
 
-    std::vector<bool> consider_indices(const std::vector<double>& gripper_widths) {
+    explicit Gripper(double min_stroke = 0.0, double max_stroke = std::numeric_limits<double>::infinity(), double finger_width = 0.0, double finger_extent = 0.0, double finger_height = 0.0, affx::Affine offset = affx::Affine()):
+        min_stroke(min_stroke), max_stroke(max_stroke), finger_width(finger_width), finger_extent(finger_extent), finger_height(finger_height), offset(offset) { }
+
+    std::vector<bool> consider_indices(const std::vector<double>& gripper_widths) const {
         std::vector<bool> result (gripper_widths.size());
         for (size_t i = 0; i < gripper_widths.size(); ++i) {
             result[i] = (min_stroke <= gripper_widths[i] && gripper_widths[i] <= max_stroke);

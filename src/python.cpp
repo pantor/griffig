@@ -29,15 +29,14 @@ PYBIND11_MODULE(_griffig, m) {
         });
 
     py::class_<Gripper>(m, "Gripper")
-        .def(py::init<const Affine&, const std::optional<std::array<double, 2>>&, const std::optional<std::array<double, 3>>&>(), "robot_to_tip"_a = Affine(), "width_interval"_a = std::nullopt, "finger_size"_a = std::nullopt)
-        .def(py::init<double, double, double, double, Affine>(), "min_stroke"_a = 0.0, "max_stroke"_a = std::numeric_limits<double>::infinity(), "width"_a = 0.0, "height"_a = 0.0, "robot_to_tip"_a = Affine())
-        .def_readwrite("robot_to_tip", &Gripper::robot_to_tip)
-        .def_readwrite("width_interval", &Gripper::width_interval)
-        .def_readwrite("finger_size", &Gripper::finger_size)
+        .def(py::init<double, double, double, double, double, Affine>(), "min_stroke"_a = 0.0, "max_stroke"_a = std::numeric_limits<double>::infinity(), "finger_width"_a = 0.0, "finger_extent"_a = 0.0, "finger_height"_a = 0.0, "offset"_a = Affine())
         .def_readwrite("min_stroke", &Gripper::min_stroke)
 	    .def_readwrite("max_stroke", &Gripper::max_stroke)
-	    .def_readwrite("width", &Gripper::width)
-	    .def_readwrite("height", &Gripper::height)
+	    .def_readwrite("finger_width", &Gripper::finger_width)
+	    .def_readwrite("finger_extent", &Gripper::finger_extent)
+        .def_readwrite("finger_height", &Gripper::finger_height)
+        // .def_readwrite("box_around_finger", &Gripper::box_around_finger)
+        .def_readwrite("offset", &Gripper::offset)
         .def("consider_indices", &Gripper::consider_indices);
 
     py::class_<OrthographicImage>(m, "OrthographicImage")

@@ -9,3 +9,5 @@ test/data
 dist
 *.egg-info
 wheels
+
+interfaces/*/generated

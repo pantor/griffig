@@ -10,11 +10,18 @@ Griffig is a library for robotic grasping on pointclouds, learned from large-sca
 
 ## Installation
 
+### Python Package
+
 Griffig is a library for Python 3.7+. You can install Griffig via
 ```bash
 pip install griffig
 ```
 or by building it yourself. For building, Griffig depends on OpenGL, OpenCV 4.5, and Pybind11. Will need Tensorflow 2.4, a GPU with NVIDIA GPU is highly recommended to achieve calculation times of < 100ms.
+
+
+### Docker
+
+We provide a Docker container with a gRPC interface.
 
 
 ## Tutorial
@@ -66,10 +73,10 @@ box_data = BoxData(
 We use the gripper class for collision checks.
 
 ```python
-gripper = Gripper(
-    min_stroke=0.01, # [m]
-    max_stroke=0.10, # [m], pre-shaped width
-    finger_size=(0.01, 0.01, 0.1),  # Size of a bounding box for optional collision check [m]
+gripper = Gripper(  # Everything in [m]
+    min_stroke=0.01,  # Min. pre-shaped width
+    max_stroke=0.10,  # Max. pre-shaped width
+    box_around_finger=[0.02, 0.008, 0.1],  # Size of a bounding box for optional collision check [m]
 )
 ```
 

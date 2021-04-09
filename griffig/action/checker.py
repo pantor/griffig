@@ -26,7 +26,7 @@ class Checker:
 
         grasp_gen.close()
 
-        # grasp.pose = grasp.pose * gripper.robot_to_tip
+        # grasp.pose = grasp.pose * gripper.offset
         return grasp
 
     def check_safety(self, grasp: Grasp, image: OrthographicImage, box_data: BoxData, gripper: Gripper):

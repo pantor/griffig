@@ -31,8 +31,8 @@ if __name__ == '__main__':
     )
 
     gripper = Gripper(  # Some information about the gripper
-        robot_to_tip=Affine(x=0.2),  # Transformation between robot's end-effector and finger tips [m]
-        width_interval=[1.0, 10.0],  # Pre-shaped width in [cm]
+        min_stroke=0.01,  # Min. pre-shaped width in [m]
+        max_stroke=0.10,  # Max. pre-shaped width in [m]
     )
 
     griffig = Griffig(

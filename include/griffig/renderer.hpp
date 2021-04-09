@@ -24,18 +24,19 @@
 class Renderer {
     using Affine = affx::Affine;
 
-    EGLDisplay eglDpy;
-    GLuint fb, color, depth, stencil;
+    EGLDisplay egl_display;
+    EGLContext egl_context;
+    GLuint egl_framebuffer, egl_color, egl_depth, egl_stencil;
 
     void init_egl(int width, int height) {
-        eglDpy = eglGetDisplay(EGL_DEFAULT_DISPLAY);
-        if (eglDpy == EGL_NO_DISPLAY) {
+        egl_display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+        if (egl_display == EGL_NO_DISPLAY) {
             std::cout << "display: " << eglGetError() << std::endl;
             exit(EXIT_FAILURE);
         }
 
         EGLint major, minor;
-        if (!eglInitialize(eglDpy, &major, &minor)) {
+        if (!eglInitialize(egl_display, &major, &minor)) {
             std::cout << "init: " << eglGetError() << std::endl;
             exit(EXIT_FAILURE);
         }
@@ -49,7 +50,7 @@ class Renderer {
 
         EGLint numConfigs;
         EGLConfig eglCfg;
-        if (!eglChooseConfig(eglDpy, configAttribs, NULL, 0, &numConfigs)) {
+        if (!eglChooseConfig(egl_display, configAttribs, NULL, 0, &numConfigs)) {
             std::cout << "choose config: " << eglGetError() << std::endl;
             exit(EXIT_FAILURE);
         }
@@ -57,13 +58,13 @@ class Renderer {
         // std::cout << "numConfigs: " << numConfigs << std::endl;
         eglBindAPI(EGL_OPENGL_API);
 
-        EGLContext eglCtx = eglCreateContext(eglDpy, eglCfg, EGL_NO_CONTEXT, NULL);
-        if (eglCtx == NULL) {
+        egl_context = eglCreateContext(egl_display, eglCfg, EGL_NO_CONTEXT, NULL);
+        if (egl_context == NULL) {
             std::cout << "create context: " << eglGetError() << std::endl;
             exit(EXIT_FAILURE);
         }
 
-        if (!eglMakeCurrent(eglDpy, EGL_NO_SURFACE, EGL_NO_SURFACE, eglCtx)) {
+        if (!eglMakeCurrent(egl_display, EGL_NO_SURFACE, EGL_NO_SURFACE, egl_context)) {
             std::cout << "make current: " << eglGetError() << std::endl;
             exit(EXIT_FAILURE);
         }
@@ -74,28 +75,37 @@ class Renderer {
             exit(EXIT_FAILURE);
         }
 
-        glGenFramebuffers(1, &fb);
+        glGenFramebuffers(1, &egl_framebuffer);
 
-        glGenTextures(1, &color);
-        glGenRenderbuffers(1, &depth);
-        glGenRenderbuffers(1, &stencil);
+        glGenTextures(1, &egl_color);
+        glGenRenderbuffers(1, &egl_depth);
+        glGenRenderbuffers(1, &egl_stencil);
 
-        glBindFramebuffer(GL_FRAMEBUFFER, fb);
+        glBindFramebuffer(GL_FRAMEBUFFER, egl_framebuffer);
 
-        glBindTexture(GL_TEXTURE_2D, color);
+        glBindTexture(GL_TEXTURE_2D, egl_color);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16, width, height, 0, GL_RGBA, GL_UNSIGNED_SHORT, NULL);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, color, 0);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, egl_color, 0);
 
-        glBindRenderbuffer(GL_RENDERBUFFER, depth);
+        glBindRenderbuffer(GL_RENDERBUFFER, egl_depth);
         glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH32F_STENCIL8, width, height);
-        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depth);
-        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, depth);
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, egl_depth);
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, egl_depth);
+
+        glViewport(0, 0, width, height);
+        glClearColor(0, 0, 0, 0);
+
+        const cv::Size size {width, height};
+        color = cv::Mat::zeros(size, CV_16UC4);
+        depth_32f = cv::Mat::zeros(size, CV_32FC1);
+        depth_16u = cv::Mat::zeros(size, CV_16UC1);
+        mask = cv::Mat::zeros(size, CV_8UC1);
     }
 
     void close_egl() {
-        eglTerminate(eglDpy);
+        eglTerminate(egl_display);
     }
 
     void draw_affines(const std::array<Affine, 4>& affines) {
@@ -122,8 +132,34 @@ class Renderer {
         draw_affines({tr, br, bru, tru});
     }
 
-    void draw_gripper() const {
+    void draw_gripper(const RobotPose& pose, const Gripper& gripper) const {
+        Affine finger_left (0.0, pose.d / 2, 0.0);
+        Affine finger_right (0.0, -pose.d / 2, 0.0);
+        std::vector<Affine> finger_size_left = {
+            Affine(gripper.finger_width / 2, 0.0, 0.0),
+            Affine(gripper.finger_width / 2, gripper.finger_extent, 0.0),
+            Affine(-gripper.finger_width / 2, gripper.finger_extent, 0.0),
+            Affine(-gripper.finger_width / 2, 0.0, 0.0),
+        };
+        std::vector<Affine> finger_size_right = {
+            Affine(gripper.finger_width / 2, 0.0, 0.0),
+            Affine(gripper.finger_width / 2, -gripper.finger_extent, 0.0),
+            Affine(-gripper.finger_width / 2, -gripper.finger_extent, 0.0),
+            Affine(-gripper.finger_width / 2, 0.0, 0.0),
+        };
 
+        glColor3f(0.0, 0.0, 1.0);
+        glBegin(GL_QUADS);
+            for (auto pt: finger_size_left) {
+                auto pt2 = pose * finger_left * pt;
+                glVertex3d(pt2.y(), pt2.x(), pt2.z());
+            }
+
+            for (auto pt: finger_size_right) {
+                auto pt2 = pose * finger_right * pt;
+                glVertex3d(pt2.y(), pt2.x(), pt2.z());
+            }
+        glEnd();
     }
 
     void draw_box(const BoxData& box_contour, const cv::Mat& image) const {
@@ -209,6 +245,7 @@ public:
 
     std::optional<BoxData> box_contour;
     std::array<double, 3> camera_position {0.0, 0.0, 0.0};
+    cv::Mat color, depth_32f, depth_16u, mask;
 
     explicit Renderer() {
         init_egl(width, height);
@@ -237,65 +274,97 @@ public:
         close_egl();
     }
 
-    OrthographicImage draw_box_on_image(OrthographicImage& image) {
+    void draw_box_on_image(OrthographicImage& image) {
         if (width != image.mat.cols || height != image.mat.rows) {
             throw std::runtime_error("Renderer size mismatch.");
         }
 
         const cv::Size size {(int)width, (int)height};
-
-        cv::Mat color = cv::Mat::zeros(size, CV_16UC4);
-        cv::Mat depth = cv::Mat::zeros(size, CV_32FC1);
-        cv::Mat mask = cv::Mat::zeros(size, CV_8UC1);
+        color = cv::Mat::zeros(size, CV_16UC4);
+        depth_32f = cv::Mat::zeros(size, CV_32FC1);
+        depth_16u = cv::Mat::zeros(size, CV_16UC4);
+        mask = cv::Mat::zeros(size, CV_8UC1);
 
         glEnable(GL_TEXTURE_2D);
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_STENCIL_TEST);
         glBindTexture(GL_TEXTURE_2D, 0);
-        glBindFramebuffer(GL_FRAMEBUFFER, fb);
 
         glStencilMask(0xFF);
         glStencilFunc(GL_ALWAYS, 0xFF, 0xFF);
         glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 
-        glViewport(0, 0, width, height);
-
-        glClearColor(0, 0, 0, 0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
         const double alpha = 1.0 / (2 * image.pixel_size);
         glMatrixMode(GL_PROJECTION);
-        glPushMatrix();
+        glLoadIdentity();
         glOrtho(alpha * width, -alpha * width, -alpha * height, alpha * height, image.min_depth, image.max_depth);
 
         glMatrixMode(GL_MODELVIEW);
-        glPushMatrix();
-        gluLookAt(camera_position[0], camera_position[1], camera_position[2], camera_position[0], camera_position[1], 1.0, 0.0, -1.0, 0.0);
+        glLoadIdentity();
+        gluLookAt(camera_position[0], camera_position[1], camera_position[2], 0.0, 0.0, 1.0, 0.0, -1.0, 0.0);
 
         if (box_contour) {
             draw_box(*box_contour, image.mat);
         }
 
-        glPopMatrix();
-        glMatrixMode(GL_PROJECTION);
-        glPopMatrix();
-        glPopAttrib();
-
         glReadPixels(0, 0, mask.cols, mask.rows, GL_STENCIL_INDEX, GL_UNSIGNED_BYTE, mask.data);
-        glReadPixels(0, 0, depth.cols, depth.rows, GL_DEPTH_COMPONENT, GL_FLOAT, depth.data);
+        glReadPixels(0, 0, depth_32f.cols, depth_32f.rows, GL_DEPTH_COMPONENT, GL_FLOAT, depth_32f.data);
         glReadPixels(0, 0, color.cols, color.rows, GL_RGBA, GL_UNSIGNED_SHORT, color.data);
 
-        depth = (1 - depth) * 255 * 255;
-        depth.convertTo(depth, CV_16U);
+        depth_32f = (1 - depth_32f) * 255 * 255;
+        depth_32f.convertTo(depth_16u, CV_16U);
 
         const int from_to[] = {0, 3};
-        mixChannels(&depth, 1, &color, 1, from_to, 1);
+        mixChannels(&depth_16u, 1, &color, 1, from_to, 1);
         color.copyTo(image.mat, mask);
-        return image;
     }
 
-    OrthographicImage draw_gripper_on_image(OrthographicImage& image, const Gripper& gripper, const RobotPose& pose) {
-        return image;
+    void draw_gripper_on_image(OrthographicImage& image, const Gripper& gripper, const RobotPose& pose) {
+        if (width != image.mat.cols || height != image.mat.rows) {
+            throw std::runtime_error("Renderer size mismatch.");
+        }
+
+        const cv::Size size {(int)width, (int)height};
+        color = cv::Mat::zeros(size, CV_16UC4);
+        depth_32f = cv::Mat::zeros(size, CV_32FC1);
+        depth_16u = cv::Mat::zeros(size, CV_16UC4);
+        mask = cv::Mat::zeros(size, CV_8UC1);
+
+        glEnable(GL_TEXTURE_2D);
+        glEnable(GL_DEPTH_TEST);
+        glEnable(GL_STENCIL_TEST);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        glBindFramebuffer(GL_FRAMEBUFFER, egl_framebuffer);
+
+        glStencilMask(0xFF);
+        glStencilFunc(GL_ALWAYS, 0xFF, 0xFF);
+        glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+
+        const double alpha = 1.0 / (2 * image.pixel_size);
+        glMatrixMode(GL_PROJECTION);
+        glLoadIdentity();
+        glOrtho(alpha * width, -alpha * width, -alpha * height, alpha * height, image.min_depth, image.max_depth);
+
+        glMatrixMode(GL_MODELVIEW);
+        glLoadIdentity();
+        gluLookAt(camera_position[0], camera_position[1], camera_position[2], 0.0, 0.0, 1.0, 0.0, -1.0, 0.0);
+
+        draw_gripper(pose, gripper);
+
+        glReadPixels(0, 0, mask.cols, mask.rows, GL_STENCIL_INDEX, GL_UNSIGNED_BYTE, mask.data);
+        glReadPixels(0, 0, depth_32f.cols, depth_32f.rows, GL_DEPTH_COMPONENT, GL_FLOAT, depth_32f.data);
+        glReadPixels(0, 0, color.cols, color.rows, GL_RGBA, GL_UNSIGNED_SHORT, color.data);
+
+        depth_32f = (1 - depth_32f) * 255 * 255;
+        depth_32f.convertTo(depth_16u, CV_16U);
+
+        const int from_to[] = {0, 3};
+        mixChannels(&depth_16u, 1, &color, 1, from_to, 1);
+        color.copyTo(image.mat, mask);
     }
 
     template<bool draw_texture>
@@ -315,36 +384,32 @@ public:
     template<bool draw_texture>
     cv::Mat render_pointcloud_mat(const Pointcloud& cloud, double pixel_density, double min_depth, double max_depth, const std::array<double, 3>& camera_position) {
         cv::Size size {(int)width, (int)height};
-        cv::Mat color = cv::Mat::zeros(size, CV_16UC4);
-        cv::Mat depth = cv::Mat::zeros(size, CV_32FC1);
+        color = cv::Mat::zeros(size, CV_16UC4);
+        depth_32f = cv::Mat::zeros(size, CV_32FC1);
+        depth_16u = cv::Mat::zeros(size, CV_16UC1);
 
         if (!cloud.size) {
             if constexpr (draw_texture) {
                 return color;
             } else {
-                return depth;
+                return depth_16u;
             }
         }
 
-        glPushAttrib(GL_ALL_ATTRIB_BITS);
         glEnable(GL_TEXTURE_2D);
         glEnable(GL_DEPTH_TEST);
         glBindTexture(GL_TEXTURE_2D, 0);
-        glBindFramebuffer(GL_FRAMEBUFFER, fb);
 
-        glViewport(0, 0, width, height);
-
-        glClearColor(0, 0, 0, 0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         const double alpha = 1.0 / (2 * pixel_density);
         glMatrixMode(GL_PROJECTION);
-        glPushMatrix();
+        glLoadIdentity();
         glOrtho(alpha * size.width, -alpha * size.width, -alpha * size.height, alpha * size.height, min_depth, max_depth);
 
         glMatrixMode(GL_MODELVIEW);
-        glPushMatrix();
-        gluLookAt(camera_position[0], camera_position[1], camera_position[2], camera_position[0], camera_position[1], 1.0, 0.0, -1.0, 0.0);
+        glLoadIdentity();
+        gluLookAt(camera_position[0], camera_position[1], camera_position[2], 0.0, 0.0, 1.0, 0.0, -1.0, 0.0);
 
         if constexpr (draw_texture) {
             const float tex_border_color[] = { 0.8f, 0.8f, 0.8f, 0.8f };
@@ -371,26 +436,21 @@ public:
         }
         glEnd();
 
-        glPopMatrix();
-        glMatrixMode(GL_PROJECTION);
-        glPopMatrix();
-        glPopAttrib();
-
         glPixelStorei(GL_PACK_ALIGNMENT, (color.step & 3) ? 1 : 4);
-        glReadPixels(0, 0, depth.cols, depth.rows, GL_DEPTH_COMPONENT, GL_FLOAT, depth.data);
+        glReadPixels(0, 0, depth_32f.cols, depth_32f.rows, GL_DEPTH_COMPONENT, GL_FLOAT, depth_32f.data);
 
-        depth = (1 - depth) * 255 * 255;
-        depth.convertTo(depth, CV_16U);
+        depth_32f = (1 - depth_32f) * 255 * 255;
+        depth_32f.convertTo(depth_16u, CV_16U);
 
         if constexpr (!draw_texture)  {
-            cv::cvtColor(depth, depth, cv::COLOR_RGB2GRAY);
-            return depth;
+            cv::cvtColor(depth_16u, depth_16u, cv::COLOR_RGB2GRAY);
+            return depth_16u;
         }
 
         glReadPixels(0, 0, color.cols, color.rows, GL_BGRA, GL_UNSIGNED_SHORT, color.data);
 
         const int from_to[] = {0, 3};
-        mixChannels(&depth, 1, &color, 1, from_to, 1);
+        mixChannels(&depth_16u, 1, &color, 1, from_to, 1);
         return color;
     }
 };
