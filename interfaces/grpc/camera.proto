@@ -1,12 +1,9 @@
 syntax = "proto3";
 
-// The greeting service definition.
 service Camera {
-    // Sends a greeting
     rpc GetImage (ImageRequest) returns (ImageReply) {}
 }
 
-// The request message containing the user's name.
 message ImageRequest {
     string camera_type = 1;
 
@@ -15,9 +12,8 @@ message ImageRequest {
     double max_depth = 4;
 }
 
-// The response message containing the greetings
 message ImageReply {
-    string camera_type = 1;
+    bytes data = 1;
 
     enum Projection {
         Projective = 0;
@@ -25,7 +21,8 @@ message ImageReply {
     }
 
     Projection projection = 2;
-    double pixel_size = 3;
-    double min_depth = 4;
-    double max_depth = 5;
+    string camera_type = 3;
+    double pixel_size = 4;
+    double min_depth = 5;
+    double max_depth = 6;
 }

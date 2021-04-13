@@ -110,7 +110,7 @@ class Renderer {
 
     void draw_affines(const std::array<Affine, 4>& affines) {
         for (auto affine: affines) {
-            glVertex3d(-affine.y(), affine.x(), -affine.z());
+            glVertex3d(affine.y(), affine.x(), -affine.z());
         }
     }
 
@@ -152,12 +152,12 @@ class Renderer {
         glBegin(GL_QUADS);
             for (auto pt: finger_size_left) {
                 auto pt2 = pose * finger_left * pt;
-                glVertex3d(pt2.y(), pt2.x(), pt2.z());
+                glVertex3d(pt2.y(), pt2.x(), -pt2.z());
             }
 
             for (auto pt: finger_size_right) {
                 auto pt2 = pose * finger_right * pt;
-                glVertex3d(pt2.y(), pt2.x(), pt2.z());
+                glVertex3d(pt2.y(), pt2.x(), -pt2.z());
             }
         glEnd();
     }
@@ -365,6 +365,56 @@ public:
         const int from_to[] = {0, 3};
         mixChannels(&depth_16u, 1, &color, 1, from_to, 1);
         color.copyTo(image.mat, mask);
+    }
+
+    bool check_gripper_collision(OrthographicImage& image, const Gripper& gripper, const RobotPose& pose) {
+        int width = image.mat.cols;
+        int height = image.mat.rows;
+        cv::Mat depth_32f = cv::Mat::zeros(cv::Size(width, height), CV_32FC1);
+
+        glClearDepth(0.0);
+
+        glClear(GL_DEPTH_BUFFER_BIT);
+        glEnable(GL_DEPTH_TEST);
+        glDepthFunc(GL_GREATER);
+
+        const double alpha = 1.0 / (2 * image.pixel_size);
+        glMatrixMode(GL_PROJECTION);
+        glLoadIdentity();
+        glOrtho(alpha * width, -alpha * width, -alpha * height, alpha * height, image.min_depth, image.max_depth);
+
+        glMatrixMode(GL_MODELVIEW);
+        glLoadIdentity();
+        gluLookAt(camera_position[0], camera_position[1], camera_position[2], 0, 0, 1, 0, -1, 0);
+
+        glBegin(GL_QUADS);
+
+        // Render fingers
+        std::array<double, 3> finger_box = {gripper.finger_width, gripper.finger_extent, gripper.finger_height};
+        draw_cube(image.pose.inverse() * pose * Affine(0.0, pose.d / 2, 0.0), finger_box);
+        draw_cube(image.pose.inverse() * pose * Affine(0.0, -pose.d / 2, 0.0), finger_box);
+
+        // Render gripper
+        // if (gripper_size[0] > 0.0) {
+        //     draw_cube(image.pose.inverse() * pose * Affine(0.0, 0.0, finger_height), gripper_size);
+        // }
+
+        glEnd();
+
+        glPixelStorei(GL_PACK_ALIGNMENT, (depth_32f.step & 3) ? 1 : 4);
+        glPixelStorei(GL_PACK_ROW_LENGTH, depth_32f.step / depth_32f.elemSize());
+        glReadPixels(0, 0, depth_32f.cols, depth_32f.rows, GL_DEPTH_COMPONENT, GL_FLOAT, depth_32f.data);
+
+        depth_32f = (1 - depth_32f);
+
+        cv::Mat image_32f = cv::Mat::zeros(cv::Size(width, height), CV_32F);
+        image.mat.convertTo(image_32f, CV_32F);
+        image_32f /= 255 * 255;
+
+        // bool no_collision = cv::checkRange(result - image_32f, true, 0, 0.0, 1.01);
+        image.mat = depth_32f * 255;
+
+        return false;
     }
 
     template<bool draw_texture>

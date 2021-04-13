@@ -35,7 +35,6 @@ PYBIND11_MODULE(_griffig, m) {
 	    .def_readwrite("finger_width", &Gripper::finger_width)
 	    .def_readwrite("finger_extent", &Gripper::finger_extent)
         .def_readwrite("finger_height", &Gripper::finger_height)
-        // .def_readwrite("box_around_finger", &Gripper::box_around_finger)
         .def_readwrite("offset", &Gripper::offset)
         .def("consider_indices", &Gripper::consider_indices);
 
@@ -137,6 +136,7 @@ PYBIND11_MODULE(_griffig, m) {
         .def(py::init<const BoxData&, double, double, double>(), "box_data"_a, "typical_camera_distance"_a, "pixel_size"_a, "depth_diff"_a)
         .def("draw_gripper_on_image", &Renderer::draw_gripper_on_image, "image"_a, "gripper"_a, "pose"_a)
         .def("draw_box_on_image", &Renderer::draw_box_on_image, "image"_a)
+        .def("check_gripper_collision", &Renderer::check_gripper_collision, "image"_a, "gripper"_a, "pose"_a)
         .def("render_pointcloud", static_cast<OrthographicImage (Renderer::*)(const Pointcloud&)>(&Renderer::render_pointcloud<true>))
         .def("render_pointcloud", static_cast<OrthographicImage (Renderer::*)(const Pointcloud&, double, double, double)>(&Renderer::render_pointcloud<true>))
         .def("render_pointcloud_mat", &Renderer::render_pointcloud_mat<true>, "pointcloud"_a, "pixel_size"_a, "min_depth"_a, "max_depth"_a, "camera_position"_a = (std::array<double, 3>){0.0, 0.0, 0.0})

@@ -29,6 +29,7 @@ def get_area_of_interest(
         size_result: Tuple[float, float] = None,
         flags=cv2.INTER_LINEAR,
         return_mat=False,
+        planar=True,
 ) -> Union[OrthographicImage, Any]:
     size_input = (image.mat.shape[1], image.mat.shape[0])
     center_image = (size_input[0] / 2, size_input[1] / 2)
@@ -43,6 +44,9 @@ def get_area_of_interest(
         scale = 1.0
 
     size_final = size_result or size_cropped or size_input
+
+    if not planar:
+        pose = image.pose.inverse() * pose
 
     trans = get_transformation(
         image.pixel_size * pose.y,
@@ -131,8 +135,10 @@ def draw_line(
         thickness=1,
     ) -> None:
     cm = 1. / 255 if image.mat.dtype == np.float32 else np.iinfo(image.mat.dtype).max / 255
-    pt1_projection = image.project(image.pose.inverse() * action_pose * pt1)
-    pt2_projection = image.project(image.pose.inverse() * action_pose * pt2)
+
+    pose = image.pose.inverse() * action_pose
+    pt1_projection = image.project(pose * pt1)
+    pt2_projection = image.project(pose * pt2)
     cv2.line(image.mat, tuple(pt1_projection), tuple(pt2_projection), (color[0] * cm, color[1] * cm, color[2] * cm), thickness, lineType=cv2.LINE_AA)
 
 
@@ -144,7 +150,8 @@ def draw_polygon(
         thickness=1,
     ) -> None:
     cm = 1. / 255 if image.mat.dtype == np.float32 else np.iinfo(image.mat.dtype).max / 255
-    polygon_projection = np.asarray([tuple(image.project(image.pose.inverse() * action_pose * p)) for p in polygon])
+    pose = image.pose.inverse() * action_pose
+    polygon_projection = np.asarray([tuple(image.project(pose * p)) for p in polygon])
     cv2.polylines(image.mat, [polygon_projection], True, (color[0] * cm, color[1] * cm, color[2] * cm), thickness, lineType=cv2.LINE_AA)
 
 
@@ -255,12 +262,12 @@ def draw_pose2(image, grasp, gripper: Gripper, convert_to_rgb=False):
 
     draw_polygon(image, grasp.pose, rect, color_rect, 2)
     draw_line(image, grasp.pose, Affine(90 / image.pixel_size, 0), Affine(100 / image.pixel_size, 0), color_rect, 2)
-    
+
     half_width = gripper.width / 2
-    
+
     draw_line(image, grasp.pose, Affine(half_width, grasp.stroke / 2), Affine(-half_width, grasp.stroke / 2), color_lines, 1)
     draw_line(image, grasp.pose, Affine(half_width, -grasp.stroke / 2), Affine(-half_width, -grasp.stroke / 2), color_lines, 1)
-    
+
     half_width_height = half_width + gripper.height
     draw_line(image, grasp.pose, Affine(half_width_height, grasp.stroke / 2), Affine(-half_width_height, grasp.stroke / 2), color_lines, 1)
     draw_line(image, grasp.pose, Affine(half_width_height, -grasp.stroke / 2), Affine(-half_width_height, -grasp.stroke / 2), color_lines, 1)

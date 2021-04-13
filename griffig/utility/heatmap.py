@@ -65,9 +65,7 @@ class Heatmap:
             # input_images += self.inference.get_input_images(goal_image, box_data)
 
         if isinstance(self.inference, InferenceActorCritic):
-            print(self.inference.model)
             estimated_reward, actor_result = self.inference.model.predict(input_images, batch_size=128)
-            print(estimated_reward.shape)
 
         else:
             estimated_reward = self.inference.model.predict(input_images, batch_size=128)

@@ -13,8 +13,6 @@ class Checker:
         self.lateral_grasps = lateral_grasps
         self.avoid_collisions = avoid_collisions
 
-        self.area_size = (200, 200)
-
     def find(self, grasp_gen, image: OrthographicImage, box_data: BoxData, gripper: Gripper):
         grasp = next(grasp_gen)
 
@@ -32,7 +30,8 @@ class Checker:
     def check_safety(self, grasp: Grasp, image: OrthographicImage, box_data: BoxData, gripper: Gripper):
         self.converter.index_to_action(grasp)
 
-        image_area = get_area_of_interest(image, grasp.pose, self.area_size, self.area_size)
+        area_size = (0.1, 0.1)  # [m]
+        image_area = get_area_of_interest(image, grasp.pose, image.pixel_size * area_size, image.pixel_size * area_size)
 
         self.converter.calculate_z(image_area, grasp)
 

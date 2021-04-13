@@ -12,16 +12,16 @@ Griffig is a library for robotic grasping on pointclouds, learned from large-sca
 
 ### Python Package
 
-Griffig is a library for Python 3.7+. You can install Griffig via
+Griffig is a library for Python 3.7+. You can install Griffig via PyPI
 ```bash
 pip install griffig
 ```
-or by building it yourself. For building, Griffig depends on OpenGL, OpenCV 4.5, and Pybind11. Will need Tensorflow 2.4, a GPU with NVIDIA GPU is highly recommended to achieve calculation times of < 100ms.
+with OpenCV 4.5 and Tensorflow 2.4 as its main dependencies. Of course, a NVIDIA GPU with corresponding CUDA version is highly recommended. When building from source, Griffig additionally requires OpenGL, EGL and the wonderful pybind11 library.
 
 
 ### Docker
 
-We provide a Docker container with a gRPC interface.
+We provide a Docker container with a gRPC interface. For more information, have a look at the gRPC guide [here](griffig/interfaces/grpc/Readme.md).
 
 
 ## Tutorial
@@ -74,40 +74,51 @@ We use the gripper class for collision checks.
 
 ```python
 gripper = Gripper(  # Everything in [m]
-    min_stroke=0.01,  # Min. pre-shaped width
-    max_stroke=0.10,  # Max. pre-shaped width
-    box_around_finger=[0.02, 0.008, 0.1],  # Size of a bounding box for optional collision check [m]
+    # Pre-shaped stroke interval
+    min_stroke=0.01,
+    max_stroke=0.10,
+    # Size of a bounding box for optional collision check
+    finger_width=0.02, # Finger width
+    finger_extent=0.008,  # Finger extent (in direction of finger opening/closing)
+    finger_height=0.1,  # Finger height from tip to gripper base
+    # An optional offset for the local grasp pose
+    offset=Affine(z=0.02),
 )
 ```
 
 ### Griffig Class
 
-the `Griffig` class is the main interface for grasp calculations.
+the `Griffig` class is the main interface for grasp calculations. You can create a griffig instance with following options:
 
 ```python
 griffig = Griffig(
     model='two-finger-planar',
     gripper=gripper,
     box_data=box_data,
-    check_collisions=True,
+    check_collisions=True,  # If true, check collisions using the given pointcloud and gripper data
 )
-
-# Griffig will output a different grasp next time...
-griffig.report_grasp_failure()
 ```
+
+Griffig includes a small model library for different tasks / gripper and downloads them automatically. At start, following models are avialable:
+
+Model Name         | Description
+------------------ | ------------------------------------------------------------------
+two-finger-planar  | Planar grasps of a two finger gripper (stroke between 2 and 9cm)
+two-finger         | 6 DoF grasps with a fully-convolutional actor-critic architecture
+
 
 ### Pointcloud Class
 
 Griffig uses its own Pointcloud class as input to its rendering pipeline. It only stores the pointer to the data, but doesn't hold anything. Currently, three possible inputs are supported:
 
 ```python
-# 1. Input from a realsense frame
+# (1) Input from a realsense frame
 pointcloud = Pointcloud(realsense_frame=<...>)
 
-# 2. Input from a ROS Pointcloud2 message
+# (2) Input from a ROS Pointcloud2 message
 pointcloud = Pointcloud(ros_message=<...>)
 
-# 3. The raw pointer variant...
+# (3) The raw pointer variant...
 pointcloud = Pointcloud(type=PointType.XYZRGB, data=cloud_data.ptr())
 
 # Then, we can render the pointcloud
@@ -115,34 +126,38 @@ image = griffig.render(pointcloud)
 image.show()
 ```
 
-
 ### Grasp Class
 
-The calculated grasp contains - of course - information about its grasp pose, but also some more details.
+The calculated grasp contains - of course - information about its grasp pose, but also some more details. At first, we calculate the grasp from the griffig instance and the current pointcloud input.
 
 ```python
 grasp = griffig.calculate_grasp(pointcloud, camera_pose=camera_pose)  # Get grasp in the global frame using the camera pose
 
 print(f'Calculated grasp {grasp} in {grasp.calculation_duration} [ms].')  # Calculation duration in [ms]
+```
 
+If using a GPU, the grasp calculation should not take longer than a few 100ms, and most probably below 80ms! Then, a typical grasp pipeline would look like this:
+
+```python
 if grasp.estimated_reward < 0.2:  # Grasp probability in [0, 1]
     print('The bin is probably empty!')
 
-# A typical grasp pipeline would look like this:
-approach_start = grasp.pose * Affine(z=-0.12)
+approach_start = grasp.pose * Affine(z=-0.12)  # Approx. finger length [m]
 
-# Move robot to start of approach trajectory
+# (1) Move robot to start of approach trajectory
 robot.move_linear(approach_start)
 
-# Move gripper to pre-shaped grasp width
+# (2) Move gripper to pre-shaped grasp width
 robot.move_gripper(grasp.pose.d)
 
-# Move robot to actual grasp pose
+# (3) Move robot to actual grasp pose
 robot_move_linear(grasp.pose)
 
-# And finally close the gripper
+# (4) And finally close the gripper
 robot.close_gripper()
 ```
+
+The robot should have grasped something! If something went wrong, make sure to call `griffig.report_grasp_failure()`, so that griffig will output a different grasp next time.
 
 
 ## Development

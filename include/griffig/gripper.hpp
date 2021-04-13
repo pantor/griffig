@@ -13,7 +13,6 @@ struct Gripper {
 
     //! A box around each finger
     double finger_width, finger_extent, finger_height;
-    // std::array<double, 3> box_around_finger {0.0, 0.0, 0.0};
 
     //! Offset transformation (local in the grippers reference frame)
     affx::Affine offset {};

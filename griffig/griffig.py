@@ -1,7 +1,6 @@
 from typing import Union
 from pathlib import Path
 
-import cv2
 import numpy as np
 from PIL import Image
 
@@ -47,7 +46,7 @@ class Griffig:
 
         self.last_grasp_successful = True
 
-    def calculate_grasp(self, camera_pose, pointcloud, box_data=None, method=None):
+    def calculate_grasp(self, pointcloud, camera_pose=None, box_data=None, method=None):
         image = self.renderer.render(pointcloud, camera_pose, box_data=box_data)
         return self.calculate_grasp_from_image(image, method=method)
 
@@ -66,6 +65,12 @@ class Griffig:
     def render(self, pointcloud: Pointcloud, pixel_size, min_depth, max_depth, size=(752, 480), position=[0.0, 0.0, 0.0]):
         img = self.renderer.render_pointcloud_mat(pointcloud, size, pixel_size, min_depth, max_depth, position)
         return Image.fromarray((img[:, :, :3] / 255).astype(np.uint8))
+
+    def calculate_heatmap():
+        pass
+
+    def calculate_heatmap_from_image():
+        pass
 
     def report_grasp_failure(self):
         self.last_grasp_successful = False
