@@ -1,11 +1,10 @@
 import cv2
 import numpy as np
 
-from ..infer.inference_planar import InferencePlanar
-from ..infer.inference_actor_critic import InferenceActorCritic
+from pyaffx import Affine
 from _griffig import BoxData, OrthographicImage
 from ..utility.image import draw_line
-from pyaffx import Affine
+from ..utility.model_data import ModelArchitecture
 
 
 class Heatmap:
@@ -57,14 +56,14 @@ class Heatmap:
             draw_indices=None,
             alpha_human=0.0,
         ):
-        input_images = self.inference.transform_for_prediction({'rcd': image}, box_data=box_data)
+        input_images = self.inference.transform_for_prediction(image, box_data=box_data)
         # input_images = self.inference.get_input_images(image, box_data)
 
         if goal_image:
-            input_images += self.inference.transform_for_prediction({'rcd': goal_image}, box_data=box_data)
+            input_images += self.inference.transform_for_prediction(goal_image, box_data=box_data)
             # input_images += self.inference.get_input_images(goal_image, box_data)
 
-        if isinstance(self.inference, InferenceActorCritic):
+        if self.inference.model_data.architecture == ModelArchitecture.ActorCritic:
             estimated_reward, actor_result = self.inference.model.predict(input_images, batch_size=128)
 
         else:
@@ -74,22 +73,22 @@ class Heatmap:
         if reward_index is not None:
             estimated_reward = estimated_reward[reward_index]
 
-        if self.inference.model_data.output[0] == 'reward+human':
-            print(estimated_reward.shape)
-
+        if estimated_reward.shape[-1] > 4:  # self.inference.model_data.output[0] == 'reward+human':
             estimated_reward = (1 - alpha_human) * estimated_reward[:, :, :, :4] + alpha_human * estimated_reward[:, :, :, 4:]
 
         # reward_reduced = np.maximum(estimated_reward, 0)
         reward_reduced = np.mean(estimated_reward, axis=3)
         # reward_reduced = estimated_reward[:, :, :, 0]
 
-        size_cropped = (input_images.shape[2], input_images.shape[1])
+        size_cropped = input_images[0].shape[1::-1]
         size_result = image.mat.shape[1::-1]
 
         heat = self.calculate_heat(reward_reduced, size_cropped, size_result)
-        heat = cv2.applyColorMap(heat, cv2.COLORMAP_JET)
+        heat = cv2.applyColorMap(heat.astype(np.uint8), cv2.COLORMAP_JET)
 
-        result = (1 - alpha) * self.get_background(image, use_rgb) + alpha * heat
+        background = self.get_background(image, use_rgb)
+        background = background.astype(np.float32) / 255
+        result = (1 - alpha) * background + alpha * heat
         result = OrthographicImage(result.astype(np.float32), image.pixel_size, image.min_depth, image.max_depth)
 
         if draw_indices is not None:
@@ -114,7 +113,7 @@ class Heatmap:
     def render2(self, image, box_data: BoxData, alpha=0.4, use_rgb=True, reward_index=None, return_mat=True):
         input_images = self.inference.get_input_images(image, box_data)
 
-        if isinstance(self.inference, InferenceActorCritic):
+        if self.inference.model_data.architecture == ModelArchitecture.ActorCritic:
             estimated_reward, _ = self.inference.model.predict(input_images, batch_size=128)
 
         else:
@@ -157,7 +156,7 @@ class Heatmap:
         point_color = (255, 255, 255)
 
         for index in indices:
-            pose = self.inf.pose_from_index(index, reward_shape, image)
+            pose = self.inference.pose_from_index(index, reward_shape, image)
             pose.x /= reward_shape[1] / 40
             pose.y /= reward_shape[2] / 40
 
@@ -165,7 +164,7 @@ class Heatmap:
             draw_line(image, pose, Affine(0, -0.001), Affine(0, 0.001), color=point_color, thickness=1)
 
     def draw_shift_arrow(self, image: OrthographicImage, reward_shape, index):
-        pose = self.inf.pose_from_index(index, reward_shape, image)
+        pose = self.inference.pose_from_index(index, reward_shape, image)
 
         arrow_color = (255, 255, 255)
         draw_line(image, pose, Affine(0, 0), Affine(0.036, 0), color=arrow_color, thickness=2)

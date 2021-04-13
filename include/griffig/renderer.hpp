@@ -407,14 +407,14 @@ public:
 
         depth_32f = (1 - depth_32f);
 
-        cv::Mat image_32f = cv::Mat::zeros(cv::Size(width, height), CV_32F);
-        image.mat.convertTo(image_32f, CV_32F);
+        cv::Mat image_16u = cv::Mat::zeros(cv::Size(width, height), CV_16UC1);
+        cv::Mat image_32f = cv::Mat::zeros(cv::Size(width, height), CV_32FC1);
+        cv::extractChannel(image.mat, image_16u, 3);
+        image_16u.convertTo(image_32f, CV_32F);
         image_32f /= 255 * 255;
 
-        // bool no_collision = cv::checkRange(result - image_32f, true, 0, 0.0, 1.01);
-        image.mat = depth_32f * 255;
-
-        return false;
+        bool no_collision = cv::checkRange(depth_32f - image_32f, true, 0, 0.0, 1.01);
+        return !no_collision;
     }
 
     template<bool draw_texture>

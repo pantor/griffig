@@ -7,18 +7,7 @@ import numpy as np
 from griffig import BoxData, Renderer, OrthographicImage, Gripper, RobotPose
 from griffig.utility.image import draw_pose, draw_around_box
 
-
-class Loader:
-    data_path = Path(__file__).parent / 'data'
-
-    @classmethod
-    def get_image(cls, episode_id: str):
-        mat_color = cv2.imread(str(cls.data_path / f'{episode_id}-rc.jpeg'), cv2.IMREAD_UNCHANGED).astype(np.uint16) * 255
-        mat_depth = cv2.imread(str(cls.data_path / f'{episode_id}-rd.jpeg'), cv2.IMREAD_UNCHANGED).astype(np.uint16) * 255
-        mat_depth = cv2.cvtColor(mat_depth, cv2.COLOR_BGR2GRAY)
-
-        mat = np.concatenate([mat_color, np.expand_dims(mat_depth, axis=2)], axis=2)
-        return OrthographicImage(mat, 2000.0, 0.22, 0.41)
+from loader import Loader
 
 
 if __name__ == '__main__':
@@ -28,13 +17,13 @@ if __name__ == '__main__':
 
     image = Loader.get_image('1')
 
-    pose = RobotPose(x=0.02, y=0.06, z=-0.32, a=0.5, b=0.7, d=0.05)
+    pose = RobotPose(x=0.04, y=0.00, z=-0.34, a=0.0, b=0.7, d=0.05)
 
     start = time()
 
     # renderer.draw_box_on_image(image)
     # renderer.draw_gripper_on_image(image, gripper, pose)
-    renderer.check_gripper_collision(image, gripper, pose)
+    print(renderer.check_gripper_collision(image, gripper, pose))
 
     # draw_around_box(image, box_data)
     # draw_pose(image, pose)

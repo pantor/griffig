@@ -1,17 +1,32 @@
 syntax = "proto3";
 
-// The greeting service definition.
-service Greeter {
-    // Sends a greeting
-    rpc SayHello (HelloRequest) returns (HelloReply) {}
+service Griffig {
+    rpc CalculateGrasp (GraspRequest) returns (GraspReply) {}
 }
 
-// The request message containing the user's name.
-message HelloRequest {
-    string name = 1;
+message Pose {
+    double x = 1;
+    double y = 2;
+    double z = 3;
+    double a = 4;
+    double b = 5;
+    double c = 6;
 }
 
-// The response message containing the greetings
-message HelloReply {
-    string message = 1;
+message BoxData {
+
+}
+
+message GraspRequest {
+    bytes pointcloud = 1;
+    Pose camera_pose = 2;
+    BoxData box_data = 3;
+    string method = 4;
+}
+
+message GraspReply {
+    Pose pose = 1;
+    double stroke = 2;
+
+    double estimated_reward = 3;
 }

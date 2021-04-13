@@ -4,21 +4,22 @@ from loguru import logger
 import numpy as np
 
 from ..action.grasp import Grasp
-from _griffig import RobotPose, OrthographicImage, BoxData
-from ..infer.inference import Inference
+from _griffig import BoxData, RobotPose, OrthographicImage
+from ..infer.inference_base import InferenceBase
 from ..infer.selection import Method, Max
 
 
-class InferenceActorCritic(Inference):
+class InferenceActorCritic(InferenceBase):
     def infer(
             self,
             image: OrthographicImage,
             method: Method = Max(),
+            box_data: BoxData = None,
             sigma: float = None,  # Factor for randomize actor result, magnitude of [cm]
             verbose=1,
         ) -> Generator[Grasp, None, None]:
 
-        input_images = self.transform_for_prediction(image)
+        input_images = self.transform_for_prediction(image, box_data)
         estimated_rewards, actions = self.model.predict(input_images, batch_size=256)
 
         if sigma is not None:

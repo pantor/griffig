@@ -7,12 +7,12 @@ from scipy.ndimage import gaussian_filter
 from pyaffx import Affine
 from ..action.grasp import Grasp
 from _griffig import BoxData, Gripper, OrthographicImage
-from ..infer.inference import Inference
+from ..infer.inference_base import InferenceBase
 from ..infer.selection import Method, Max
 from ..utility.image import draw_around_box2, get_box_projection, get_inference_image
 
 
-class InferencePlanar(Inference):
+class InferencePlanar(InferenceBase):
     def get_input_images(self, orig_image, box_data: BoxData):
         image = orig_image.clone()
         size_cropped = self._get_size_cropped(orig_image, box_data)
@@ -43,7 +43,7 @@ class InferencePlanar(Inference):
             a=self.a_space[index[0]],
         ).inverse()
 
-    def infer(self, method, image, box_data: BoxData = None, gripper: Gripper = None):
+    def infer(self, image, method, box_data: BoxData = None, gripper: Gripper = None):
         input_images = self.get_input_images(image, box_data)
         estimated_reward = self.model.predict(input_images, batch_size=128)
 

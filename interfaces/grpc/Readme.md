@@ -1,1 +1,0 @@
-# Griffig gRPC Interface

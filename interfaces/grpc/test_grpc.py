@@ -1,14 +1,14 @@
 import grpc
 
-from generated.helloworld_pb2 import HelloRequest
-from generated.helloworld_pb2_grpc import GreeterStub
+from generated.griffig_pb2 import GraspRequest
+from generated.griffig_pb2_grpc import GriffigStub
 
 
 def run():
     with grpc.insecure_channel('localhost:50051') as channel:
-        stub = GreeterStub(channel)
-        response = stub.SayHello(HelloRequest(name='you'))
-    print("Greeter client received: " + response.message)
+        stub = GriffigStub(channel)
+        response = stub.CalculateGrasp(GraspRequest(method='max'))
+    print(response)
 
 
 if __name__ == '__main__':
