@@ -95,7 +95,7 @@ griffig = Griffig(
     model='two-finger-planar',
     gripper=gripper,
     box_data=box_data,
-    check_collisions=True,  # If true, check collisions using the given pointcloud and gripper data
+    avoid_collisions=True,  # If true, check collisions using the given pointcloud and gripper data
 )
 ```
 

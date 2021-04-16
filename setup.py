@@ -43,17 +43,14 @@ class CMakeBuild(build_ext):
 
         # Pile all .so in one place and use $ORIGIN as RPATH
         cmake_args = ['-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=' + extdir]
-        # cmake_args += ['-DPYBIND11_TEST=OFF']
         cmake_args += ['-DCMAKE_BUILD_WITH_INSTALL_RPATH=TRUE']
         cmake_args += ['-DCMAKE_INSTALL_RPATH={}'.format('$ORIGIN')]
         cmake_args += ['-DCMAKE_BUILD_TYPE=' + build_type]
 
-        env = os.environ.copy()
-        env['CXXFLAGS'] = '{} -DVERSION_INFO=\\"{}\\"'.format(env.get('CXXFLAGS', ''),
-                                                              self.distribution.get_version())
         if not os.path.exists(self.build_temp):
             os.makedirs(self.build_temp)
-        subprocess.check_call(['cmake', ext.sourcedir] + cmake_args, cwd=self.build_temp, env=env)
+
+        subprocess.check_call(['cmake', ext.sourcedir] + cmake_args, cwd=self.build_temp)
         subprocess.check_call(['cmake', '--build', '.', '--target', ext.name] + build_args, cwd=self.build_temp)
 
 

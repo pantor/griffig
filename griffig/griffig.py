@@ -52,11 +52,19 @@ class Griffig:
         self.last_grasp_successful = True
         return grasp
 
-    def render(self, pointcloud: Pointcloud, pixel_size, min_depth, max_depth, size=(752, 480), position=[0.0, 0.0, 0.0]):
+    def render(self, pointcloud: Pointcloud, pixel_size=None, min_depth=None, max_depth=None, size=(752, 480), position=[0.0, 0.0, 0.0]):
+        pixel_size = pixel_size if pixel_size is not None else self.model_data.pixel_size
+        min_depth = min_depth if min_depth is not None else self.model_data.min_depth
+        max_depth = max_depth if max_depth is not None else self.model_data.max_depth
+
         img = self.renderer.render_pointcloud_mat(pointcloud, size, pixel_size, min_depth, max_depth, position)
         return Image.fromarray((img[:, :, 2::-1] / 255).astype(np.uint8))
 
     def calculate_heatmap(self, pointcloud: Pointcloud, box_data: BoxData = None, a_space=[0.0]):
+        pixel_size = self.model_data.pixel_size
+        min_depth = self.model_data.min_depth
+        max_depth = self.model_data.max_depth
+
         img = self.renderer.render_pointcloud_mat(pointcloud, size, pixel_size, min_depth, max_depth, position)
         return self.calculate_heatmap_from_image(img, box_data, a_space)
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <GL/glew.h>
+#include <pybind11/embed.h>
 
 
 enum class PointType {
@@ -64,6 +65,8 @@ public:
 
 
 struct Pointcloud {
+    pybind11::object pc;
+
     size_t size {0};
     int width {0}, height {0};
 

@@ -66,21 +66,31 @@ PYBIND11_MODULE(_griffig, m) {
         .export_values();
 
     py::class_<Pointcloud>(m, "Pointcloud")
-        .def(py::init([](py::object& realsense_frames, py::object& ros_message, PointType type, py::object data) {
-            if (!realsense_frames.is(py::none())) {
-                py::object depth = realsense_frames.attr("get_depth_frame")();
-                py::object color = realsense_frames.attr("get_color_frame")();
+        .def(py::init([](py::object frames) {
+            py::object pc = py::module_::import("pyrealsense2").attr("pointcloud")();
+            py::object depth = frames.attr("get_depth_frame")();
+            py::object color = frames.attr("get_color_frame")();
 
-                py::object pointcloud = py::module_::import("pyrealsense2").attr("pointcloud");
-                py::object points = pointcloud.attr("calculate")(pointcloud, depth);
-                // pointcloud.attr("map_to")(color);
-                // return std::make_unique<Pointcloud>(points.size(), color.get_width(), color.get_height(), points.get_vertices(), color.get_data(), points.get_texture_coordinates());
+            py::object points = pc.attr("calculate")(depth);
+            pc.attr("map_to")(color);
 
-            } else if (!ros_message.is(py::none())) {
-		        data = ros_message.attr("data");
-		        type = PointType::XYZWRGBA;
-	        }
+            size_t size = points.attr("size")().cast<size_t>();
+            int width = color.attr("get_width")().cast<int>();
+            int height = color.attr("get_height")().cast<int>();
 
+            py::buffer vertices_buf = points.attr("get_vertices")();
+            py::buffer tex_buf = color.attr("get_data")();
+            py::buffer tex_coords_buf = points.attr("get_texture_coordinates")();
+
+            const void* vertices = vertices_buf.request().ptr;
+            const void* texture = tex_buf.request().ptr;
+            const void* tex_coords = tex_coords_buf.request().ptr;
+
+            auto result = std::make_unique<Pointcloud>(size, width, height, vertices, texture, tex_coords);
+            result->pc = std::move(pc);
+            return result;
+        }), py::kw_only(), "realsense_frames"_a=py::none())
+        .def(py::init([](PointType type, py::object data) {
             size_t point_size;
 	        switch (type) {
 		        default:
@@ -90,9 +100,8 @@ PYBIND11_MODULE(_griffig, m) {
 	        }
 
 	        py::buffer_info info(py::buffer((py::bytes)data).request());
-	        return std::make_unique<Pointcloud>(static_cast<size_t>(info.size) / point_size, type, info.ptr);
-
-        }), py::kw_only(), "realsense_frames"_a=py::none(), "ros_message"_a=py::none(), "type"_a=PointType::XYZWRGBA, "data"_a=py::none())
+            return std::make_unique<Pointcloud>(static_cast<size_t>(info.size) / point_size, type, info.ptr);
+        }), py::kw_only(), "type"_a=PointType::XYZWRGBA, "data"_a=py::none())
         .def_readonly("size", &Pointcloud::size)
         .def_readonly("point_type", &Pointcloud::point_type);
 

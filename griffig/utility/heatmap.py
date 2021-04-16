@@ -80,6 +80,11 @@ class Heatmap:
         reward_reduced = np.mean(estimated_reward, axis=3)
         # reward_reduced = estimated_reward[:, :, :, 0]
 
+        # For heatmapping the actor
+        # reward_reduced = actor_result[:, :, :, 2]
+        # reward_reduced = (reward_reduced - np.min(reward_reduced)) / np.ptp(reward_reduced)
+        # reward_reduced += 0.5
+
         size_cropped = input_images[0].shape[1::-1]
         size_result = image.mat.shape[1::-1]
 
@@ -103,7 +108,7 @@ class Heatmap:
 
         if draw_shifts:
             for _ in range(10):
-                self.draw_shift_arrow(result, reward_reduced, np.unravel_index(reward_reduced.argmax(), reward_reduced.shape))
+                self.draw_arrow(result, reward_reduced, np.unravel_index(reward_reduced.argmax(), reward_reduced.shape))
                 reward_reduced[np.unravel_index(reward_reduced.argmax(), reward_reduced.shape)] = 0
 
         if save_path:
@@ -163,7 +168,7 @@ class Heatmap:
             draw_line(image, pose, Affine(-0.001, 0), Affine(0.001, 0), color=point_color, thickness=1)
             draw_line(image, pose, Affine(0, -0.001), Affine(0, 0.001), color=point_color, thickness=1)
 
-    def draw_shift_arrow(self, image: OrthographicImage, reward_shape, index):
+    def draw_arrow(self, image: OrthographicImage, reward_shape, index):
         pose = self.inference.pose_from_index(index, reward_shape, image)
 
         arrow_color = (255, 255, 255)
