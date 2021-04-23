@@ -32,7 +32,7 @@ def get_area_of_interest(
         planar=True,
 ) -> Union[OrthographicImage, Any]:
     size_input = (image.mat.shape[1], image.mat.shape[0])
-    center_image = (size_input[0] / 2, size_input[1] / 2)
+    center_image = (image.mat.shape[1] / 2, image.mat.shape[0] / 2)
 
     if size_result and size_cropped:
         scale = size_result[0] / size_cropped[0]

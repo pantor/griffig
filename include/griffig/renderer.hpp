@@ -251,7 +251,7 @@ public:
         init_egl(width, height);
     }
 
-    explicit Renderer(const std::array<int, 2>& size): width(size[0]), height(size[1]) {
+    explicit Renderer(const std::array<int, 2>& size, double typical_camera_distance): width(size[0]), height(size[1]), typical_camera_distance(typical_camera_distance) {
         init_egl(width, height);
     }
 

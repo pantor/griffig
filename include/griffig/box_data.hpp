@@ -35,6 +35,9 @@ struct BoxData {
             cont.push_back({(float)e[0] * pixel_size, (float)e[1] * pixel_size});
         }
         auto rect = cv::boundingRect(cont);
-        return {rect.height + offset, rect.width + offset};
+        return {
+            2*std::max(std::abs(rect.y), std::abs(rect.y + rect.height)) + offset,
+            2*std::max(std::abs(rect.x), std::abs(rect.x + rect.width)) + offset
+        };
     }
 };

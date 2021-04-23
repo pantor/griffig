@@ -1,10 +1,8 @@
 from argparse import ArgumentParser
-from time import time
 
-import cv2
 import pyrealsense2 as rs
 
-from griffig import Affine, Griffig, Gripper, BoxData, Pointcloud, Renderer
+from griffig import Griffig, Gripper, BoxData, Pointcloud
 
 
 class RealsenseReader:
@@ -31,8 +29,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     box_data = BoxData(
-        size=(0.2, 0.3, 0.1),  # (x, y, z) [m]
-        center=(0.0, 0.0, 0.0),  # At the center [m]
+        center=(0.0, 0.017, 0.0),  # At the center [m]
+        size=(0.18, 0.285, 0.1),  # (x, y, z) [m]
     )
 
     gripper = Gripper(  # Some information about the gripper
@@ -40,27 +38,19 @@ if __name__ == '__main__':
         max_stroke=0.10,  # Max. pre-shaped width in [m]
     )
 
-    # griffig = Griffig(
-    #     model='two-finger-planar',  # Use the default model for a two-finger gripper
-    #     gripper=gripper,
-    #     box_data=box_data,
-    #     avoid_collisions=True,
-    # )
-
-    renderer = Renderer((752, 480), 2000.0, 0.19, box_data)
+    griffig = Griffig(
+        model='two-finger-planar',  # Use the default model for a two-finger gripper
+        gripper=gripper,
+        box_data=box_data,
+        typical_camera_distance=0.41,
+        avoid_collisions=True,
+    )
 
     realsense = RealsenseReader(args.input)
     frames = realsense.wait_for_frames()
 
-    s1 = time()
     pointcloud = Pointcloud(realsense_frames=frames)
-    print(time() - s1)
 
-    s2 = time()
-    image = renderer.render_pointcloud_mat(pointcloud, 2000.0, 0.22, 0.41, [0.0, 0.0, 0.0])
-    print(time() - s2)
-
-    cv2.imwrite('../tmp/test_render.png', image[:, :, 3])
-
-    # image = griffig.render(pointcloud, pixel_size=2000.0, min_depth=0.22, max_depth=0.41)
-    # image.show()
+    grasp, image = griffig.calculate_grasp(pointcloud, return_image=True)
+    print(grasp)
+    image.show()

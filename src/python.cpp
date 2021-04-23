@@ -14,7 +14,6 @@ using Affine = affx::Affine;
 
 PYBIND11_MODULE(_griffig, m) {
     NDArrayConverter::init_numpy();
-    py::module::import("pyaffx");
 
     py::class_<BoxData>(m, "BoxData")
         .def(py::init<const std::vector<std::array<double, 3>>&, const std::optional<Affine>&>(), "contour"_a, "pose"_a = std::nullopt)
@@ -139,9 +138,8 @@ PYBIND11_MODULE(_griffig, m) {
         });
 
     py::class_<Renderer>(m, "Renderer")
-        .def(py::init<const std::array<int, 2>&>(), "size"_a)
+        .def(py::init<const std::array<int, 2>&, double>(), "size"_a, "typical_camera_distance"_a)
         .def(py::init<const std::array<int, 2>&, double, double, const std::optional<BoxData>&>(), "size"_a, "pixel_size"_a, "depth_diff"_a, "contour"_a = std::nullopt)
-        .def(py::init<const std::array<int, 2>&, const std::array<double, 3>&>(), "size"_a, "position"_a)
         .def(py::init<const BoxData&, double, double, double>(), "box_data"_a, "typical_camera_distance"_a, "pixel_size"_a, "depth_diff"_a)
         .def("draw_gripper_on_image", &Renderer::draw_gripper_on_image, "image"_a, "gripper"_a, "pose"_a)
         .def("draw_box_on_image", &Renderer::draw_box_on_image, "image"_a)
@@ -153,6 +151,7 @@ PYBIND11_MODULE(_griffig, m) {
 	    .def_readwrite("camera_position", &Renderer::camera_position)
         .def_readwrite("box_data", &Renderer::box_contour)
         .def_readwrite("pixel_size", &Renderer::pixel_size)
+        .def_readwrite("typical_camera_distance", &Renderer::typical_camera_distance)
         .def_readwrite("depth_diff", &Renderer::depth_diff)
         .def_readwrite("width", &Renderer::width)
         .def_readwrite("height", &Renderer::height);

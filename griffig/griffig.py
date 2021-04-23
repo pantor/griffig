@@ -10,7 +10,7 @@ from .action.converter import Converter
 from .infer.inference import Inference
 from .infer.selection import Method, Max, Top
 from .utility.heatmap import Heatmap
-from .utility.image import draw_pose
+from .utility.image import draw_around_box, draw_pose
 from .utility.model_library import ModelData, ModelLibrary, ModelArchitecture
 
 
@@ -20,6 +20,7 @@ class Griffig:
         model: Union[str, ModelData, Path] ='two-finger-planar',
         gripper: Gripper = None,
         box_data: BoxData = None,
+        typical_camera_distance: int = None,
         avoid_collisions=False,
         gpu: int = None,
         verbose = 0,
@@ -33,14 +34,19 @@ class Griffig:
         self.converter = Converter(self.model_data.gripper_widths)
         self.checker = Checker(self.converter, avoid_collisions=avoid_collisions)
 
-        image_size = box_data.get_image_size(self.model_data.pixel_size, offset=6) if box_data else (752, 480)
-        self.renderer = Renderer(image_size, [0.0, 0.0, 0.0])
+        self.typical_camera_distance = typical_camera_distance if typical_camera_distance is not None else 0.5
+        self.renderer = Renderer(box_data, self.typical_camera_distance, self.model_data.pixel_size, self.model_data.depth_diff)
 
         self.last_grasp_successful = True
 
-    def calculate_grasp(self, pointcloud: Pointcloud, camera_pose=None, box_data=None, gripper=None, method=None):
-        image = self.renderer.render(pointcloud, camera_pose, box_data=box_data)
-        return self.calculate_grasp_from_image(image, box_data=box_data, gripper=gripper, method=method)
+    def calculate_grasp(self, pointcloud: Pointcloud, camera_pose=None, box_data=None, gripper=None, method=None, return_image=False):
+        image = self.renderer.render_pointcloud(pointcloud)
+        grasp = self.calculate_grasp_from_image(image, box_data=box_data, gripper=gripper, method=method)
+
+        if return_image:
+            image = image.clone()
+            return grasp, self.draw_grasp_on_image(image, grasp)
+        return grasp
 
     def calculate_grasp_from_image(self, image, box_data=None, gripper=None, method=None):
         box_data = box_data if box_data else self.box_data
@@ -52,20 +58,21 @@ class Griffig:
         self.last_grasp_successful = True
         return grasp
 
-    def render(self, pointcloud: Pointcloud, pixel_size=None, min_depth=None, max_depth=None, size=(752, 480), position=[0.0, 0.0, 0.0]):
+    def render(self, pointcloud: Pointcloud, pixel_size=None, min_depth=None, max_depth=None, position=[0.0, 0.0, 0.0]):
         pixel_size = pixel_size if pixel_size is not None else self.model_data.pixel_size
-        min_depth = min_depth if min_depth is not None else self.model_data.min_depth
-        max_depth = max_depth if max_depth is not None else self.model_data.max_depth
+        min_depth = min_depth if min_depth is not None else self.typical_camera_distance - self.model_data.depth_diff
+        max_depth = max_depth if max_depth is not None else self.typical_camera_distance
 
-        img = self.renderer.render_pointcloud_mat(pointcloud, size, pixel_size, min_depth, max_depth, position)
-        return Image.fromarray((img[:, :, 2::-1] / 255).astype(np.uint8))
+        img = self.renderer.render_pointcloud_mat(pointcloud, pixel_size, min_depth, max_depth, position)
+        return self.convert_to_pillow_image(img)
 
     def calculate_heatmap(self, pointcloud: Pointcloud, box_data: BoxData = None, a_space=[0.0]):
         pixel_size = self.model_data.pixel_size
-        min_depth = self.model_data.min_depth
-        max_depth = self.model_data.max_depth
+        min_depth = self.typical_camera_distance - self.model_data.depth_diff
+        max_depth = self.typical_camera_distance
+        position = [0.0, 0.0, 0.0]
 
-        img = self.renderer.render_pointcloud_mat(pointcloud, size, pixel_size, min_depth, max_depth, position)
+        img = self.renderer.render_pointcloud_mat(pointcloud, pixel_size, min_depth, max_depth, position)
         return self.calculate_heatmap_from_image(img, box_data, a_space)
 
     def calculate_heatmap_from_image(self, image, box_data: BoxData = None, a_space=[0.0]):
@@ -75,7 +82,15 @@ class Griffig:
 
     def draw_grasp_on_image(self, image, grasp):
         draw_pose(image, RobotPose(grasp.pose, d=grasp.stroke))
-        return Image.fromarray((image.mat[:, :, 2::-1] / 255).astype(np.uint8))
+        return self.convert_to_pillow_image(image.mat)
 
     def report_grasp_failure(self):
         self.last_grasp_successful = False
+
+    @classmethod
+    def convert_to_pillow_image(cls, image):
+        return Image.fromarray((image.mat[:, :, 3] / 255).astype(np.uint8))
+
+    @classmethod
+    def draw_around_box(cls, image, box_data):
+        return draw_around_box(image, box_data)
