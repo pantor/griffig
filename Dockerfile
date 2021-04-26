@@ -1,4 +1,4 @@
-FROM tensorflow/tensorflow:2.4.1-gpu
+FROM griffig.xyz/base
 
 WORKDIR griffig
 
