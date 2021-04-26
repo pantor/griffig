@@ -21,7 +21,11 @@ with OpenCV 4.5 and Tensorflow 2.4 as its main dependencies. Of course, a NVIDIA
 
 ### Docker
 
-We provide a Docker container with a gRPC interface. For more information, have a look at the gRPC guide [here](griffig/interfaces/grpc/Readme.md).
+We provide a Docker container with a gRPC interface. You can pull and run the image via
+```
+docker run griffig.xyz/core-gpu -p 5000:5000
+```
+For more information, have a look at the gRPC guide [here](griffig/interfaces/grpc/Readme.md).
 
 
 ## Tutorial
