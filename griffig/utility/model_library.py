@@ -11,7 +11,7 @@ from .model_data import ModelArchitecture, ModelData
 
 
 class ModelLibrary:
-    remote_url = 'http://46.101.236.109/models/'
+    remote_url = 'https://griffig.xyz/api/v1/models/'
     tmp_path = Path('/tmp') / 'griffig-models'
 
     @classmethod
@@ -32,7 +32,7 @@ class ModelLibrary:
                 if r.status_code == 404:
                     raise Exception(f'Model {name} not found!')
 
-                model_remote_url = r.json()['path']
+                model_remote_url = r.json()['download_path']
 
                 model_path.mkdir(parents=True, exist_ok=True)
                 with urlopen(model_remote_url) as zipresp, NamedTemporaryFile() as tfile:
@@ -43,7 +43,8 @@ class ModelLibrary:
             else:
                 print(f'Found model file at {model_path}')
 
-        with open(model_path / 'model-data.json', 'r') as read_file:
+        with open(model_path / 'model_data.json', 'r') as read_file:
             model_data = ModelData(**json.load(read_file))
-            model_data.path = model_path / model_data.path
+            model_data.path = model_path / name / 'model' / 'data' / 'model'  # model_data.path
+            
         return model_data

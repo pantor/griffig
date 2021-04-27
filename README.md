@@ -30,10 +30,15 @@ For more information, have a look at the gRPC guide [here](griffig/interfaces/gr
 
 ## Tutorial
 
-We focused on making *Griffig* easy to use! In the tutorial, we use a RGBD pointcloud of the scene to detect a 6D grasp point with a pre-shaped gripper width. The actual approach trajectory is parallel to the gripper fingers.
+We focused on making *Griffig* easy to use! In the tutorial, we use a RGBD pointcloud of the scene to detect a 6D grasp point with an additional pre-shaped gripper stroke. The actual approach trajectory is parallel to the gripper fingers. A typical scene looks like this
+
+<image>
+
+with a bin
+
 
 ```python
-from griffig import Affine, Griffig, Gripper, Pointcloud, Box
+from griffig import Affine, Griffig, Gripper, Pointcloud, BoxData
 
 # Griffig requires a RGB pointcloud of the scene
 pointcloud = Pointcloud.fromRealsense(camera.record_pointcloud())
@@ -43,7 +48,7 @@ griffig = Griffig(
     model='two-finger',  # Use the default model for a two-finger gripper
     gripper=Gripper(  # Some information about the gripper
         min_stroke=0.01, # [m]
-        max_stroke=0.10, # [m], to limit pre-shaped width
+        max_stroke=0.10, # [m], to limit pre-shaped stroke
     ),
 )
 
@@ -151,7 +156,7 @@ approach_start = grasp.pose * Affine(z=-0.12)  # Approx. finger length [m]
 # (1) Move robot to start of approach trajectory
 robot.move_linear(approach_start)
 
-# (2) Move gripper to pre-shaped grasp width
+# (2) Move gripper to pre-shaped grasp stroke
 robot.move_gripper(grasp.pose.d)
 
 # (3) Move robot to actual grasp pose
@@ -171,6 +176,8 @@ Griffig is written in C++17 and Python 3.7. It is tested against following depen
 - OpenCV 4.5.0
 - TensorFlow 2.4
 - PyBind11 2.6
+
+To build the docker image, call `docker build -t griffig.xyz/core-gpu .`.
 
 
 ## License

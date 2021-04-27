@@ -115,43 +115,6 @@ class Heatmap:
             cv2.imwrite(str(save_path), result.mat)
         return result.mat
 
-    def render2(self, image, box_data: BoxData, alpha=0.4, use_rgb=True, reward_index=None, return_mat=True):
-        input_images = self.inference.get_input_images(image, box_data)
-
-        if self.inference.model_data.architecture == ModelArchitecture.ActorCritic:
-            estimated_reward, _ = self.inference.model.predict(input_images, batch_size=128)
-
-        else:
-            estimated_reward = self.inference.model.predict(input_images, batch_size=128)
-
-        if reward_index is not None:
-            estimated_reward = estimated_reward[reward_index]
-
-        # reward_reduced = np.max(estimated_reward, axis=3)
-        reward_reduced = np.mean(estimated_reward, axis=3)
-        # reward_reduced = estimated_reward[:, :, :, 0]
-
-        size_cropped = (input_images.shape[2], input_images.shape[1])
-        size_result = image.mat.shape[1::-1]
-
-        heat = self.calculate_heat(reward_reduced, size_cropped, size_result)
-        heat = cv2.applyColorMap(heat, cv2.COLORMAP_JET)
-
-        if len(image.mat.shape) >= 3 and image.mat.shape[-1] >= 3:
-            if use_rgb:
-                back = cv2.cvtColor(image.mat[:, :, :3], cv2.COLOR_RGB2GRAY)
-                back = cv2.cvtColor(back, cv2.COLOR_GRAY2RGB)
-            else:
-                back = cv2.cvtColor(image.mat[:, :, 3:], cv2.COLOR_GRAY2RGB)
-        else:
-            back = cv2.cvtColor(image.mat, cv2.COLOR_GRAY2RGB)
-
-        result = (1 - alpha) * back + alpha * heat
-        if return_mat:
-            return result
-
-        return result
-
     def draw_lateral(self, image: OrthographicImage, reward_shape, index, action):
         pose = self.inference.pose_from_index(index, reward_shape, image)
         arrow_color = (255*255, 255*255, 255*255)

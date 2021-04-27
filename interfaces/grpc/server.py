@@ -1,3 +1,4 @@
+from argparse import ArgumentParser
 from concurrent import futures
 import sys
 from pathlib import Path
@@ -12,6 +13,9 @@ from griffig import Griffig, RobotPose
 
 
 class GriffiggRPC(GriffigServicer):
+    def __init__(self, griffig):
+        self.griffig = griffig
+
     def CalculateGrasp(self, request, context):
         grasp_pose = RobotPose(x=0.2, z=0.3, d=0.05)
 
@@ -27,13 +31,18 @@ class GriffiggRPC(GriffigServicer):
         return reply
 
 
-def serve():
+if __name__ == '__main__':
+    parser = ArgumentParser(description='Griffig gRPC server')
+    parser.add_argument('-m', '--model', dest='model', type=str, default='two-finger-planar')
+    args = parser.parse_args()
+
+    griffig = Griffig(
+        model=args.model,
+    )
+
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-    add_GriffigServicer_to_server(GriffiggRPC(), server)
+    griffig_servicer = GriffiggRPC(griffig)
+    add_GriffigServicer_to_server(griffig_servicer, server)
     server.add_insecure_port('[::]:50051')
     server.start()
     server.wait_for_termination()
-
-
-if __name__ == '__main__':
-    serve()

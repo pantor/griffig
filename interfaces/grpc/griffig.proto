@@ -1,7 +1,7 @@
 syntax = "proto3";
 
 service Griffig {
-    rpc CalculateGrasp (GraspRequest) returns (GraspReply) {}
+    rpc CalculateGrasp (GraspRequest) returns (Grasp) {}
 }
 
 message Pose {
@@ -17,6 +17,10 @@ message BoxData {
 
 }
 
+message GripperData {
+
+}
+
 message GraspRequest {
     bytes pointcloud = 1;
     Pose camera_pose = 2;
@@ -24,7 +28,7 @@ message GraspRequest {
     string method = 4;
 }
 
-message GraspReply {
+message Grasp {
     Pose pose = 1;
     double stroke = 2;
 
