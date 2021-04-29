@@ -21,11 +21,20 @@ PYBIND11_MODULE(_griffig, m) {
         .def_readwrite("contour", &BoxData::contour)
         .def_readwrite("pose", &BoxData::pose)
         .def("get_rect", &BoxData::get_rect, "pixel_size"_a, "offset"_a=0)
+        .def("is_pose_inside", &BoxData::is_pose_inside, "pose"_a)
         .def("as_dict", [](BoxData self) {
             py::dict d;
             d["contour"] = self.contour;
             return d;
         });
+
+    py::class_<Grasp>(m, "Grasp")
+        .def(py::init<const Affine&, double, size_t, double>(), "pose"_a=Affine(), "stroke"_a=0.0, "index"_a=0, "estimated_reward"_a=0.0)
+        .def_readwrite("pose", &Grasp::pose)
+        .def_readwrite("stroke", &Grasp::stroke)
+        .def_readwrite("index", &Grasp::index)
+        .def_readwrite("estimated_reward", &Grasp::estimated_reward)
+        .def("__repr__", &Grasp::toString);
 
     py::class_<Gripper>(m, "Gripper")
         .def(py::init<double, double, double, double, double, Affine>(), "min_stroke"_a = 0.0, "max_stroke"_a = std::numeric_limits<double>::infinity(), "finger_width"_a = 0.0, "finger_extent"_a = 0.0, "finger_height"_a = 0.0, "offset"_a = Affine())

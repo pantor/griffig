@@ -2,6 +2,7 @@ from pyaffx import Affine
 
 from _griffig import (
     BoxData,
+    Grasp,
     Gripper,
     OrthographicImage,
     PointType,
@@ -11,7 +12,6 @@ from _griffig import (
 )
 
 from .griffig import Griffig
-from .action.grasp import Grasp
 from .infer.inference import Inference
 from .infer.inference_planar import InferencePlanar
 from .infer.inference_actor_critic import InferenceActorCritic

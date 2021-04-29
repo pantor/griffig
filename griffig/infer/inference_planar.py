@@ -5,8 +5,7 @@ import numpy as np
 from scipy.ndimage import gaussian_filter
 
 from pyaffx import Affine
-from ..action.grasp import Grasp
-from _griffig import BoxData, Gripper, OrthographicImage
+from _griffig import BoxData, Grasp, Gripper, OrthographicImage
 from ..infer.inference_base import InferenceBase
 from ..infer.selection import Method, Max
 from ..utility.image import draw_around_box2, get_box_projection, get_inference_image

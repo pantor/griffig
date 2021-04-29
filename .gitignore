@@ -4,10 +4,10 @@ build
 __pycache__
 *.pyc
 
-test/data
+test/data/*
+!test/data/1-rc.jpeg
+!test/data/1-rd.jpeg
 
 dist
 *.egg-info
 wheels
-
-interfaces/*/generated

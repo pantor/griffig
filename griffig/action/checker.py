@@ -2,8 +2,7 @@ import cv2
 import numpy as np
 
 from pyaffx import Affine
-from .grasp import Grasp
-from _griffig import BoxData, Gripper, OrthographicImage
+from _griffig import BoxData, Grasp, Gripper, OrthographicImage, RobotPose
 from ..utility.image import get_area_of_interest
 
 
@@ -41,18 +40,12 @@ class Checker:
             self.converter.calculate_b(image_area, grasp)
             self.converter.calculate_c(image_area, grasp)
 
-        return (np.isfinite([grasp.pose.x, grasp.pose.y, grasp.pose.z]).all() and self.is_grasp_inside_box(grasp, box_data))
+        is_safe = np.isfinite([grasp.pose.x, grasp.pose.y, grasp.pose.z]).all()
 
-    def is_grasp_inside_box(self, grasp: Grasp, box_data: BoxData):
-        if not box_data:
-            return True
+        if box_data:
+            is_safe &= box_data.is_pose_inside(RobotPose(grasp.pose, d=grasp.stroke))
 
-        half_stroke = 0.5 * (grasp.stroke + 0.002)  # [m]
-        gripper_b1 = (grasp.pose * Affine(y=half_stroke)).translation()[0:2]
-        gripper_b2 = (grasp.pose * Affine(y=-half_stroke)).translation()[0:2]
+        if self.avoid_collisions:
+            pass  # Do the gripper rendering here
 
-        check_contour = np.array([(c[0], c[1]) for c in box_data.contour], dtype=np.float32)
-        jaw1_inside_box = cv2.pointPolygonTest(check_contour, tuple(gripper_b1), False) >= 0
-        jaw2_inside_box = cv2.pointPolygonTest(check_contour, tuple(gripper_b2), False) >= 0
-
-        return jaw1_inside_box and jaw2_inside_box
+        return is_safe

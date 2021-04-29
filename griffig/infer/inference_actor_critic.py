@@ -3,8 +3,7 @@ from typing import Generator
 from loguru import logger
 import numpy as np
 
-from ..action.grasp import Grasp
-from _griffig import BoxData, RobotPose, OrthographicImage
+from _griffig import BoxData, Grasp, OrthographicImage, RobotPose
 from ..infer.inference_base import InferenceBase
 from ..infer.selection import Method, Max
 

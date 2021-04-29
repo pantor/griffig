@@ -95,8 +95,8 @@ class Griffig:
         return Image.fromarray(mat, 'RGBA')
 
     @classmethod
-    def draw_box_on_image(cls, image, box_data):
-        draw_around_box(image, box_data)
+    def draw_box_on_image(cls, image, box_data, draw_lines=False):
+        draw_around_box(image, box_data, draw_lines)
         return cls.convert_to_pillow_image(image)
 
     @classmethod

@@ -1,9 +1,9 @@
 import json
 from pathlib import Path
+from shutil import unpack_archive
+from tempfile import NamedTemporaryFile
 from typing import Union
 from urllib.request import urlopen
-from tempfile import NamedTemporaryFile
-from shutil import unpack_archive
 
 import requests
 
@@ -22,7 +22,7 @@ class ModelLibrary:
             model_path = cls.tmp_path / name
 
             if not model_path.exists():
-                print(f'Download model file to {model_path}...')
+                print(f'Download model {name} to {model_path}...')
 
                 try:
                     r = requests.get(url=cls.remote_url + name, timeout=1.0)  # [s]
@@ -46,5 +46,5 @@ class ModelLibrary:
         with open(model_path / 'model_data.json', 'r') as read_file:
             model_data = ModelData(**json.load(read_file))
             model_data.path = model_path / name / 'model' / 'data' / 'model'  # model_data.path
-            
+
         return model_data
