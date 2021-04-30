@@ -64,10 +64,10 @@ class Heatmap:
             # input_images += self.inference.get_input_images(goal_image, box_data)
 
         if self.inference.model_data.architecture == ModelArchitecture.ActorCritic:
-            estimated_reward, actor_result = self.inference.model.predict(input_images, batch_size=128)
+            estimated_reward, actor_result = self.inference.model.predict_on_batch(input_images)
 
         else:
-            estimated_reward = self.inference.model.predict(input_images, batch_size=128)
+            estimated_reward = self.inference.model.predict_on_batch(input_images)
             actor_result = None
 
         if reward_index is not None:

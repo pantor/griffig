@@ -44,7 +44,7 @@ class InferencePlanar(InferenceBase):
 
     def infer(self, image, method, box_data: BoxData = None, gripper: Gripper = None):
         input_images = self.get_input_images(image, box_data)
-        estimated_reward = self.model.predict(input_images, batch_size=128)
+        estimated_reward = self.model.predict_on_batch(input_images)
 
         if self.gaussian_sigma:
             for i in range(estimated_reward.shape[0]):
