@@ -8,7 +8,7 @@ from griffig import BoxData, Grasp, Griffig, Gripper, Renderer, RobotPose
 from loader import Loader
 
 
-class WidgetTestCase(unittest.TestCase):
+class DrawTestCase(unittest.TestCase):
     output_path = Path(__file__).parent / 'data'
 
     def setUp(self):

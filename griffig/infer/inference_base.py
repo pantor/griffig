@@ -1,6 +1,8 @@
 from pathlib import Path
+import os
 
 import cv2
+from loguru import logger
 import numpy as np
 import tensorflow.keras as tk
 
@@ -30,6 +32,13 @@ class InferenceBase:
             tf.config.experimental.set_visible_devices(devices[gpu], 'GPU')
             for device in devices:
                 tf.config.experimental.set_memory_growth(device, True)
+
+        if os.getenv('GRIFFIG_HARDWARE') == 'jetson-nano':
+            import tensorflow as tf
+            logger.info('Detected NVIDIA Jetson Nano Platform')
+            device = tf.config.list_physical_devices('GPU')
+            tf.config.experimental.set_memory_growth(device[0], True)
+            tf.config.experimental.set_virtual_device_configuration(device[0], [tf.config.experimental.VirtualDeviceConfiguration(memory_limit=256)])
 
         model = tk.models.load_model(path, compile=False)
 

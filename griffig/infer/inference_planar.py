@@ -1,8 +1,9 @@
 from pathlib import Path
+from time import time
 
 import cv2
 import numpy as np
-from scipy.ndimage import gaussian_filter
+# from scipy.ndimage import gaussian_filter
 
 from pyaffx import Affine
 from _griffig import BoxData, Grasp, Gripper, OrthographicImage
@@ -43,6 +44,8 @@ class InferencePlanar(InferenceBase):
         ).inverse()
 
     def infer(self, image, method, box_data: BoxData = None, gripper: Gripper = None):
+        start = time()
+
         input_images = self.get_input_images(image, box_data)
         estimated_reward = self.model.predict_on_batch(input_images)
 
@@ -63,6 +66,7 @@ class InferencePlanar(InferenceBase):
             action.pose = self.pose_from_index(index, estimated_reward.shape, image)
             action.pose.z = np.nan
             action.estimated_reward = estimated_reward[index]
+            action.calculation_duration = time() - start
 
             yield action
 

@@ -19,6 +19,8 @@ struct Grasp {
     size_t index; // Index of inference model
     double estimated_reward;
 
+    double calculation_duration {0.0};
+
     // explicit Grasp() { }
     explicit Grasp(const Affine& pose = Affine(), double stroke = 0.0, size_t index = 0, double estimated_reward = 0.0): pose(pose), stroke(stroke), index(index), estimated_reward(estimated_reward) { }
 
