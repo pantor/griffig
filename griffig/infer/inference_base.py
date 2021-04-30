@@ -26,25 +26,63 @@ class InferenceBase:
         self.keep_indixes = None
 
     def _load_model(self, path: Path, submodel=None, gpu=None):
-        if gpu is not None:
+        if os.getenv('GRIFFIG_HARDWARE') == 'jetson-nano':
             import tensorflow as tf
+            
+            logger.info('Detected NVIDIA Jetson Nano Platform')
+            device = tf.config.list_physical_devices('GPU')
+            tf.config.experimental.set_memory_growth(device[0], True)
+            tf.config.experimental.set_virtual_device_configuration(device[0], [tf.config.experimental.VirtualDeviceConfiguration(memory_limit=512)])
+
+        elif gpu is not None:
+            import tensorflow as tf
+            
             devices = tf.config.list_physical_devices('GPU')
             tf.config.experimental.set_visible_devices(devices[gpu], 'GPU')
             for device in devices:
                 tf.config.experimental.set_memory_growth(device, True)
 
-        if os.getenv('GRIFFIG_HARDWARE') == 'jetson-nano':
-            import tensorflow as tf
-            logger.info('Detected NVIDIA Jetson Nano Platform')
-            device = tf.config.list_physical_devices('GPU')
-            tf.config.experimental.set_memory_growth(device[0], True)
-            tf.config.experimental.set_virtual_device_configuration(device[0], [tf.config.experimental.VirtualDeviceConfiguration(memory_limit=256)])
-
         model = tk.models.load_model(path, compile=False)
 
         if submodel:
             model = model.get_layer(submodel)
-        return model
+
+        # TensorRT
+        if os.getenv('GRIFFIG_HARDWARE') == 'jetson-nano':
+            from tensorflow.python.compiler.tensorrt import trt_convert as trt
+
+            submodel_path = str(path / 'submodel')
+            model.save(submodel_path)
+
+            logger.info('Convert to TensorRT')
+            conversion_params = trt.TrtConversionParams(
+                precision_mode=trt.TrtPrecisionMode.FP16,
+                max_batch_size=32,
+            )
+
+            converter = trt.TrtGraphConverterV2(
+                input_saved_model_dir=submodel_path,
+                conversion_params=conversion_params
+            )
+            converter.convert()
+            converted_path = str(path / 'converted')
+            converter.save(converted_path)
+
+            root = tf.saved_model.load(converted_path)
+            func = root.signatures['serving_default']
+            
+            def predict(x):
+                x = tf.convert_to_tensor(x)
+                output = [y.numpy() for y in func(x).values()]
+
+                if len(output) == 1:
+                    return output[0]
+                return output
+            return predict
+
+        def predict(x):
+            return model.predict_on_batch(x)
+        return predict
 
     def _get_size_cropped(self, image, box_data: BoxData):
         box_projection = get_box_projection(image, box_data)

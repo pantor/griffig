@@ -19,7 +19,7 @@ class InferenceActorCritic(InferenceBase):
         ) -> Generator[Grasp, None, None]:
 
         input_images = self.transform_for_prediction(image, box_data)
-        estimated_rewards, actions = self.model.predict_on_batch(input_images)
+        estimated_rewards, actions = self.model(input_images)
 
         if sigma is not None:
             actions += self.rs.normal([0.0, 0.0, 0.0], [sigma * 0.01, sigma * 0.1, sigma * 0.1], size=actions.shape)

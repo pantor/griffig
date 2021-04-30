@@ -9,13 +9,11 @@ if __name__ == '__main__':
 
     image = Loader.get_image('1')
 
-    # Load NN first time
-    griffig.calculate_grasp_from_image(image, box_data)
+    for _ in range(30):
+        grasp = griffig.calculate_grasp_from_image(image, box_data)
 
-    grasp = griffig.calculate_grasp_from_image(image, box_data)
-
-    print(grasp)
-    print(f'Calculation duration: {grasp.calculation_duration}')
+        print(grasp)
+        print(f'Calculation duration: {grasp.calculation_duration}')
 
     img = griffig.draw_grasp_on_image(image, grasp)
     img.show()
