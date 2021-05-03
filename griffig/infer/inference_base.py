@@ -51,22 +51,36 @@ class InferenceBase:
         if os.getenv('GRIFFIG_HARDWARE') == 'jetson-nano':
             from tensorflow.python.compiler.tensorrt import trt_convert as trt
 
-            submodel_path = str(path / 'submodel')
-            model.save(submodel_path)
-
-            logger.info('Convert to TensorRT')
-            conversion_params = trt.TrtConversionParams(
-                precision_mode=trt.TrtPrecisionMode.FP16,
-                max_batch_size=32,
-            )
-
-            converter = trt.TrtGraphConverterV2(
-                input_saved_model_dir=submodel_path,
-                conversion_params=conversion_params
-            )
-            converter.convert()
             converted_path = str(path / 'converted')
-            converter.save(converted_path)
+
+            if not converted_path.exists():
+                submodel_path = str(path / 'submodel')
+                model.save(submodel_path)
+
+                logger.info('Convert to TensorRT')
+                conversion_params = trt.TrtConversionParams(
+                    precision_mode=trt.TrtPrecisionMode.FP16,
+                    max_batch_size=32,
+                )
+
+                def my_input_fn():
+                    # Let's assume a network with 2 input tensors. We generate 3 sets
+                    # of dummy input data:
+                    input_shapes = [[(20, 110, 110, 4)], # min and max range for 1st input list
+                                    [(20, 110, 110, 4)], # min and max range for 2nd list of two tensors
+                                    [(20, 110, 110, 4)]] # 3rd input list
+                    for shapes in input_shapes:
+                        # return a list of input tensors
+                        yield [np.zeros(x).astype(np.float32) for x in shapes]
+
+                converter = trt.TrtGraphConverterV2(
+                    input_saved_model_dir=submodel_path,
+                    conversion_params=conversion_params
+                )
+                converter.convert()
+                converter.build(input_fn=my_input_fn)
+                
+                converter.save(converted_path)
 
             root = tf.saved_model.load(converted_path)
             func = root.signatures['serving_default']
