@@ -7,8 +7,10 @@ class ModelArchitecture(str, Enum):
     Planar = 'planar'  # Model-based z, and bc=0
     PlanarTypes = 'planar-types'  # Model-based z, and bc=0, for multiple learned types
     PlanarZ = 'planar-z'  # Regression-based z, and bc=0
+    PlanarSemantic = 'planar-semantic'  # Semantic Grasping
     Lateral = 'lateral'  # Model-based z, b, and c
     ActorCritic = 'actor-critic'  # Actor-critic architecture
+    ModelBasedConvolution = 'model-based-convolution'  # Model-based convolution
 
 
 class ModelData:
