@@ -263,12 +263,12 @@ def draw_pose2(image, grasp, gripper: Gripper, convert_to_rgb=False):
     draw_polygon(image, grasp.pose, rect, color_rect, 2)
     draw_line(image, grasp.pose, Affine(90 / image.pixel_size, 0), Affine(100 / image.pixel_size, 0), color_rect, 2)
 
-    half_width = gripper.width / 2
+    half_width = gripper.finger_width / 2
 
     draw_line(image, grasp.pose, Affine(half_width, grasp.stroke / 2), Affine(-half_width, grasp.stroke / 2), color_lines, 1)
     draw_line(image, grasp.pose, Affine(half_width, -grasp.stroke / 2), Affine(-half_width, -grasp.stroke / 2), color_lines, 1)
 
-    half_width_height = half_width + gripper.height
+    half_width_height = half_width + gripper.finger_height
     draw_line(image, grasp.pose, Affine(half_width_height, grasp.stroke / 2), Affine(-half_width_height, grasp.stroke / 2), color_lines, 1)
     draw_line(image, grasp.pose, Affine(half_width_height, -grasp.stroke / 2), Affine(-half_width_height, -grasp.stroke / 2), color_lines, 1)
 

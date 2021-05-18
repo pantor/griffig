@@ -476,12 +476,21 @@ public:
         // glPointSize((float)size.width / 640);
         glBegin(GL_POINTS);
         {
-            for (size_t i = 0; i < cloud.size; ++i) {
-                glVertex3fv(&((PointTypes::XYZ *)cloud.vertices + i)->x);
-
-                if constexpr (draw_texture) {
-                    glTexCoord2fv(&((PointTypes::UV *)cloud.tex_coords + i)->u);
+            if (cloud.point_type == PointType::XYZ) {
+                for (size_t i = 0; i < cloud.size; ++i) {
+                    glVertex3fv(&((PointTypes::XYZ *)cloud.vertices + i)->x);
+                    if constexpr (draw_texture) {
+                        glTexCoord2fv(&((PointTypes::UV *)cloud.tex_coords + i)->u);
+                    }
                 }
+
+            } else if (cloud.point_type == PointType::XYZWRGBA) {
+                for (size_t i = 0; i < cloud.size; ++i) {
+                    glVertex3fv(&((PointTypes::XYZWRGBA *)cloud.vertices + i)->x);
+                    if constexpr (draw_texture) {
+                        glColor3ubv(&((PointTypes::XYZWRGBA *)cloud.vertices + i)->r);
+                    }
+                } 
             }
         }
         glEnd();

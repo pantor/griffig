@@ -99,6 +99,12 @@ PYBIND11_MODULE(_griffig, m) {
             result->pc = std::move(pc);
             return result;
         }), py::kw_only(), "realsense_frames"_a=py::none())
+        .def(py::init([](py::object ros_message) {
+            py::object data = ros_message.attr("data");
+            const size_t point_size = sizeof(PointTypes::XYZWRGBA);
+	        py::buffer_info info(py::buffer((py::bytes)data).request());
+            return std::make_unique<Pointcloud>(static_cast<size_t>(info.size) / point_size, PointType::XYZWRGBA, info.ptr);
+        }), py::kw_only(), "ros_message"_a=py::none())
         .def(py::init([](PointType type, py::object data) {
             size_t point_size;
 	        switch (type) {

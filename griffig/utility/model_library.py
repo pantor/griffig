@@ -43,6 +43,9 @@ class ModelLibrary:
             else:
                 print(f'Found model file at {model_path}')
 
+        if isinstance(name, Path):
+            name = name.name
+
         with open(model_path / 'model_data.json', 'r') as read_file:
             model_data = ModelData(**json.load(read_file))
             model_data.path = model_path / name / 'model' / 'data' / 'model'  # model_data.path

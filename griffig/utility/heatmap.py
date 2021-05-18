@@ -64,10 +64,10 @@ class Heatmap:
             # input_images += self.inference.get_input_images(goal_image, box_data)
 
         if self.inference.model_data.architecture == ModelArchitecture.ActorCritic:
-            estimated_reward, actor_result = self.inference.model.predict_on_batch(input_images)
+            estimated_reward, actor_result = self.inference.model(input_images)
 
         else:
-            estimated_reward = self.inference.model.predict_on_batch(input_images)
+            estimated_reward = self.inference.model(input_images)
             actor_result = None
 
         if reward_index is not None:
@@ -92,7 +92,10 @@ class Heatmap:
         heat = cv2.applyColorMap(heat.astype(np.uint8), cv2.COLORMAP_JET)
 
         background = self.get_background(image, use_rgb)
-        background = background.astype(np.float32) / 255
+        if background.dtype == np.uint16:
+            background = background.astype(np.float32) / 255
+        else:
+            background = background.astype(np.float32)
         result = (1 - alpha) * background + alpha * heat
         result = OrthographicImage(result.astype(np.float32), image.pixel_size, image.min_depth, image.max_depth)
 
