@@ -1,4 +1,3 @@
-from pathlib import Path
 from time import time
 
 import cv2
@@ -13,36 +12,6 @@ from ..utility.image import draw_around_box2, get_box_projection, get_inference_
 
 
 class InferencePlanar(InferenceBase):
-    def get_input_images(self, orig_image, box_data: BoxData):
-        image = orig_image.clone()
-        size_cropped = self._get_size_cropped(orig_image, box_data)
-
-        if box_data:
-            draw_around_box2(image, box_data)
-
-        result_ = []
-
-        for a in self.a_space:
-            result_.append(
-                get_inference_image(image, Affine(a=a), size_cropped, self.size_area_cropped, self.size_result, return_mat=True)
-            )
-
-        if self.verbose:
-            cv2.imwrite('/tmp/inf.png', result_[10][:, :, 3])
-
-        result = np.array(result_, dtype=np.float32) / np.iinfo(image.mat.dtype).max
-        if len(result.shape) == 3:
-            result = np.expand_dims(result, axis=-1)
-
-        return result
-
-    def pose_from_index(self, index, index_shape, image: OrthographicImage, resolution_factor=2.0):
-        return Affine(
-            x=resolution_factor * self.scale_factors[0] * image.position_from_index(index[1], index_shape[1]),
-            y=resolution_factor * self.scale_factors[1] * image.position_from_index(index[2], index_shape[2]),
-            a=self.a_space[index[0]],
-        ).inverse()
-
     def infer(self, image, method, box_data: BoxData = None, gripper: Gripper = None):
         start = time()
 

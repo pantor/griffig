@@ -8,7 +8,7 @@ import tensorflow.keras as tk
 
 from pyaffx import Affine
 from _griffig import BoxData, RobotPose, OrthographicImage
-from ..utility.image import draw_around_box, get_inference_image, get_box_projection
+from ..utility.image import draw_around_box, draw_around_box2, get_inference_image, get_box_projection
 
 
 class InferenceBase:
@@ -105,37 +105,29 @@ class InferenceBase:
         side_length = int(np.ceil(2 * farthest_corner * self.size_result[0] / self.size_area_cropped[0]))
         return (side_length, side_length)
 
-    def pose_from_index(self, index, index_shape, image: OrthographicImage) -> RobotPose:
-        return RobotPose(Affine(
-            x=self.scale_factors[0] * image.position_from_index(index[1], index_shape[1]),
-            y=self.scale_factors[1] * image.position_from_index(index[2], index_shape[2]),
+    def pose_from_index(self, index, index_shape, image: OrthographicImage, resolution_factor=2.0):
+        return Affine(
+            x=resolution_factor * self.scale_factors[0] * image.position_from_index(index[1], index_shape[1]),
+            y=resolution_factor * self.scale_factors[1] * image.position_from_index(index[2], index_shape[2]),
             a=self.a_space[index[0]],
-        ).inverse(), d=0.0)
+        ).inverse()
 
-    def transform_for_prediction(
-            self,
-            image: OrthographicImage,
-            box_data: BoxData = None,
-    ):
-        size_cropped = self._get_size_cropped(image, box_data)
+    def get_input_images(self, orig_image, box_data: BoxData):
+        image = orig_image.clone()
+        size_cropped = self._get_size_cropped(orig_image, box_data)
 
         if box_data:
-            draw_around_box(image, box_data)
+            draw_around_box2(image, box_data)
 
-        # Rotate images
-        rotated = []
-        for a in self.a_space:
-            dst_depth = get_inference_image(image, Affine(a=a), size_cropped, self.size_area_cropped, self.size_result)
-            rotated.append(dst_depth.mat)
-
-        result = np.array(rotated) / np.iinfo(image.mat.dtype).max
-
-        if len(result.shape) == 3:
-            result = np.expand_dims(result, axis=-1)
+        result_ = [get_inference_image(image, Affine(a=a), size_cropped, self.size_area_cropped, self.size_result, return_mat=True) for a in self.a_space]
 
         if self.verbose:
-            cv2.imwrite('/tmp/test-input-c.png', result[0][0, :, :, :3] * 255)
-            cv2.imwrite('/tmp/test-input-d.png', result[0][0, :, :, 3:] * 255)
+            cv2.imwrite('/tmp/test-input-c.png', result_[10][:, :, 3])
+            cv2.imwrite('/tmp/test-input-d.png', result_[10][:, :, 3])
+
+        result = np.array(result_, dtype=np.float32) / np.iinfo(image.mat.dtype).max
+        if len(result.shape) == 3:
+            result = np.expand_dims(result, axis=-1)
 
         return result
 

@@ -18,17 +18,16 @@ class InferenceActorCritic(InferenceBase):
             verbose=1,
         ) -> Generator[Grasp, None, None]:
 
-        input_images = self.transform_for_prediction(image, box_data)
+        input_images = self.get_input_images(image, box_data)
         estimated_rewards, actions = self.model(input_images)
 
         if sigma is not None:
             actions += self.rs.normal([0.0, 0.0, 0.0], [sigma * 0.01, sigma * 0.1, sigma * 0.1], size=actions.shape)
 
-        # Set some action (indices) to zero
-        if self.keep_indixes:
-            self.keep_array_at_last_indixes(estimated_rewards, self.keep_indixes)
+        if gripper:
+            possible_indices = gripper.consider_indices(self.model_data.gripper_widths)
+            self.set_last_dim_to_zero(estimated_reward, np.invert(possible_indices))
 
-        # Find the index and corresponding action using the selection method
         for _ in range(estimated_rewards.size):
             index_raveled = method(estimated_rewards)
             index = np.unravel_index(index_raveled, estimated_rewards.shape)
