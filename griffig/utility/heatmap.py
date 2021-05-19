@@ -3,7 +3,7 @@ import numpy as np
 
 from pyaffx import Affine
 from _griffig import BoxData, OrthographicImage
-from ..utility.image import draw_line
+from ..utility.image import draw_line, get_inference_image
 from ..utility.model_data import ModelArchitecture
 
 
@@ -45,6 +45,7 @@ class Heatmap:
     def render(
             self,
             image: OrthographicImage,
+            object_image: OrthographicImage = None,
             goal_image: OrthographicImage = None,
             box_data: BoxData = None,
             alpha=0.5,
@@ -56,15 +57,20 @@ class Heatmap:
             draw_indices=None,
             alpha_human=0.0,
         ):
-        input_images = self.inference.transform_for_prediction(image, box_data=box_data)
-        # input_images = self.inference.get_input_images(image, box_data)
+        input_images = self.inference.get_input_images(image, box_data)
 
-        if goal_image:
-            input_images += self.inference.transform_for_prediction(goal_image, box_data=box_data)
-            # input_images += self.inference.get_input_images(goal_image, box_data)
+        # if goal_image:
+        #     input_images += self.inference.get_input_images(goal_image, box_data)
 
         if self.inference.model_data.architecture == ModelArchitecture.ActorCritic:
             estimated_reward, actor_result = self.inference.model(input_images)
+
+        elif self.inference.model_data.architecture == ModelArchitecture.PlanarSemantic:
+            input_object_images = [get_inference_image(object_image, Affine(a=a), (224, 224), (224, 224), (224, 224), return_mat=True) for a in self.inference.a_space]
+            input_object_images = np.array(input_object_images) / np.iinfo(object_image.mat.dtype).max
+
+            estimated_grasp_reward, estimated_object_reward = self.inference.model([input_images, [input_object_images]])
+            estimated_reward = estimated_object_reward * estimated_grasp_reward
 
         else:
             estimated_reward = self.inference.model(input_images)

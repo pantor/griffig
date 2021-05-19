@@ -473,7 +473,10 @@ public:
         }
 
         glEnable(GL_POINT_SMOOTH);
+
         // glPointSize((float)size.width / 640);
+        auto color_format = GL_BGRA;
+
         glBegin(GL_POINTS);
         {
             if (cloud.point_type == PointType::XYZ) {
@@ -485,6 +488,8 @@ public:
                 }
 
             } else if (cloud.point_type == PointType::XYZWRGBA) {
+                color_format = GL_RGBA;
+
                 for (size_t i = 0; i < cloud.size; ++i) {
                     glVertex3fv(&((PointTypes::XYZWRGBA *)cloud.vertices + i)->x);
                     if constexpr (draw_texture) {
@@ -506,7 +511,7 @@ public:
             return depth_16u;
         }
 
-        glReadPixels(0, 0, color.cols, color.rows, GL_BGRA, GL_UNSIGNED_SHORT, color.data);
+        glReadPixels(0, 0, color.cols, color.rows, color_format, GL_UNSIGNED_SHORT, color.data);
 
         const int from_to[] = {0, 3};
         mixChannels(&depth_16u, 1, &color, 1, from_to, 1);
