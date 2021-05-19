@@ -1,6 +1,7 @@
 from time import time
 
 import numpy as np
+from scipy.ndimage import gaussian_filter
 
 from _griffig import BoxData, Grasp, Gripper, OrthographicImage
 from ..infer.inference_base import InferenceBase
@@ -22,8 +23,13 @@ class InferenceActorCritic(InferenceBase):
 
         if gripper:
             possible_indices = gripper.consider_indices(self.model_data.gripper_widths)
-            # for estimated_reward in estimated_rewards:
-            #     self.set_last_dim_to_zero(estimated_reward, np.invert(possible_indices))
+            for i in range(estimated_rewards.shape[0]):
+                self.set_last_dim_to_zero(estimated_rewards[i], np.invert(possible_indices))
+
+        if self.gaussian_sigma:
+            for i in range(estimated_rewards.shape[0]):
+                for j in range(estimated_rewards.shape[1]):
+                    estimated_rewards[i][j] = gaussian_filter(estimated_rewards[i][j], self.gaussian_sigma)
 
         for _ in range(estimated_rewards.size):
             index_raveled = method(estimated_rewards)

@@ -260,20 +260,22 @@ def draw_pose2(image, grasp, gripper: Gripper, convert_to_rgb=False):
 
     rect = [Affine(*p) for p in _get_rect_contour([0.0, 0.0, 0.0], [200.0 / image.pixel_size, 200.0 / image.pixel_size, 0.0])]
 
-    draw_polygon(image, grasp.pose, rect, color_rect, 2)
-    draw_line(image, grasp.pose, Affine(90 / image.pixel_size, 0), Affine(100 / image.pixel_size, 0), color_rect, 2)
+    action_pose = RobotPose(grasp.pose, d=grasp.stroke)
+
+    draw_polygon(image, action_pose, rect, color_rect, 2)
+    draw_line(image, action_pose, Affine(90 / image.pixel_size, 0), Affine(100 / image.pixel_size, 0), color_rect, 2)
 
     half_width = gripper.finger_width / 2
 
-    draw_line(image, grasp.pose, Affine(half_width, grasp.stroke / 2), Affine(-half_width, grasp.stroke / 2), color_lines, 1)
-    draw_line(image, grasp.pose, Affine(half_width, -grasp.stroke / 2), Affine(-half_width, -grasp.stroke / 2), color_lines, 1)
+    draw_line(image, action_pose, Affine(half_width, action_pose.d / 2), Affine(-half_width, action_pose.d / 2), color_lines, 1)
+    draw_line(image, action_pose, Affine(half_width, -action_pose.d / 2), Affine(-half_width, -action_pose.d / 2), color_lines, 1)
 
     half_width_height = half_width + gripper.finger_height
-    draw_line(image, grasp.pose, Affine(half_width_height, grasp.stroke / 2), Affine(-half_width_height, grasp.stroke / 2), color_lines, 1)
-    draw_line(image, grasp.pose, Affine(half_width_height, -grasp.stroke / 2), Affine(-half_width_height, -grasp.stroke / 2), color_lines, 1)
+    draw_line(image, action_pose, Affine(half_width_height, action_pose.d / 2), Affine(-half_width_height, action_pose.d / 2), color_lines, 1)
+    draw_line(image, action_pose, Affine(half_width_height, -action_pose.d / 2), Affine(-half_width_height, -action_pose.d / 2), color_lines, 1)
 
-    draw_line(image, grasp.pose, Affine(0, grasp.stroke / 2), Affine(0, -grasp.stroke / 2), color_lines, 1)
-    draw_line(image, grasp.pose, Affine(0.006, 0), Affine(-0.006, 0), color_lines, 1)
+    draw_line(image, action_pose, Affine(0, action_pose.d / 2), Affine(0, -action_pose.d / 2), color_lines, 1)
+    draw_line(image, action_pose, Affine(0.006, 0), Affine(-0.006, 0), color_lines, 1)
 
-    if False and not isinstance(grasp.pose.z, str) and np.isfinite(grasp.pose.z):
-        draw_line(image, grasp.pose, Affine(z=0.14), Affine(), color_direction, 1)
+    if np.isfinite(action_pose.z) and (action_pose.b != 0 or action_pose.c != 0):
+        draw_line(image, action_pose, Affine(z=0.14), Affine(), color_direction, 1)
