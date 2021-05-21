@@ -34,6 +34,7 @@ PYBIND11_MODULE(_griffig, m) {
         .def_readwrite("stroke", &Grasp::stroke)
         .def_readwrite("index", &Grasp::index)
         .def_readwrite("estimated_reward", &Grasp::estimated_reward)
+        .def_readwrite("detail_durations", &Grasp::detail_durations)
         .def_readwrite("calculation_duration", &Grasp::calculation_duration)
         .def("__repr__", &Grasp::toString);
 

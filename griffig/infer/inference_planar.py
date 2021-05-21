@@ -4,7 +4,6 @@ import cv2
 import numpy as np
 from scipy.ndimage import gaussian_filter
 
-from pyaffx import Affine
 from _griffig import BoxData, Grasp, Gripper, OrthographicImage
 from ..infer.inference_base import InferenceBase
 from ..infer.selection import Method, Max
@@ -12,11 +11,17 @@ from ..utility.image import draw_around_box2, get_box_projection, get_inference_
 
 
 class InferencePlanar(InferenceBase):
-    def infer(self, image, method, box_data: BoxData = None, gripper: Gripper = None):
+    def infer(self, image: OrthographicImage, method: Method, box_data: BoxData = None, gripper: Gripper = None):
+        start = time()
+        input_images = self.get_input_images(image, box_data)
+
+        pre_duration = time() - start
         start = time()
 
-        input_images = self.get_input_images(image, box_data)
         estimated_reward = self.model(input_images)
+        
+        nn_duration = time() - start
+        start = time()
 
         if self.gaussian_sigma:
             for i in range(estimated_reward.shape[0]):
@@ -35,7 +40,12 @@ class InferencePlanar(InferenceBase):
             action.pose = self.pose_from_index(index, estimated_reward.shape, image)
             action.pose.z = np.nan
             action.estimated_reward = estimated_reward[index]
-            action.calculation_duration = time() - start
+            action.detail_durations = {
+                'pre': pre_duration,
+                'nn': nn_duration,
+                'post': time() - start,
+            }
+            action.calculation_duration = sum(action.detail_durations.values())
 
             yield action
 

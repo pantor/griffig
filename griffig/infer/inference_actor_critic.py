@@ -9,11 +9,18 @@ from ..infer.selection import Method, Max
 
 
 class InferenceActorCritic(InferenceBase):
-    def infer(self, image: OrthographicImage, method: Method = Max(), box_data: BoxData = None, gripper: Gripper = None):
+    def infer(self, image: OrthographicImage, method: Method, box_data: BoxData = None, gripper: Gripper = None):
         start = time()
 
         input_images = self.get_input_images(image, box_data)
+
+        pre_duration = time() - start
+        start = time()
+
         rewards_and_actions = self.model(input_images)
+
+        nn_duration = time() - start
+        start = time()
 
         estimated_rewards = np.array(rewards_and_actions[::2])
         action_from_actor = np.array(rewards_and_actions[1::2])
@@ -40,7 +47,12 @@ class InferenceActorCritic(InferenceBase):
             action.pose = self.pose_from_index(index[1:], estimated_rewards.shape[1:], image)
             action.pose.z, action.pose.b, action.pose.c = action_from_actor[index[0], index[1], index[2], index[3]]
             action.estimated_reward = estimated_rewards[index]
-            action.calculation_duration = time() - start
+            action.detail_durations = {
+                'pre': pre_duration,
+                'nn': nn_duration,
+                'post': time() - start,
+            }
+            action.calculation_duration = sum(action.detail_durations.values())
 
             yield action
 

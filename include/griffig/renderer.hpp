@@ -488,7 +488,7 @@ public:
                 }
 
             } else if (cloud.point_type == PointType::XYZWRGBA) {
-                // color_format = GL_RGBA;
+                color_format = GL_RGBA;
 
                 for (size_t i = 0; i < cloud.size; ++i) {
                     glVertex3fv(&((PointTypes::XYZWRGBA *)cloud.vertices + i)->x);

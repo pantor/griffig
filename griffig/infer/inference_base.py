@@ -48,19 +48,21 @@ class InferenceBase:
             model = model.get_layer(submodel)
 
         # TensorRT
-        if os.getenv('GRIFFIG_HARDWARE') == 'jetson-nano':
+        use_tensorrt = os.getenv('GRIFFIG_HARDWARE') == 'jetson-nano'
+        if use_tensorrt:
+            import tensorflow as tf
             from tensorflow.python.compiler.tensorrt import trt_convert as trt
 
-            converted_path = str(path / 'converted')
+            converted_path = path / 'converted'
 
             if not converted_path.exists():
-                submodel_path = str(path / 'submodel')
-                model.save(submodel_path)
+                submodel_path = path / 'submodel'
+                model.save(str(submodel_path))
 
                 logger.info('Convert to TensorRT')
                 conversion_params = trt.TrtConversionParams(
                     precision_mode=trt.TrtPrecisionMode.FP16,
-                    max_batch_size=32,
+                    # max_batch_size=32,
                 )
 
                 def my_input_fn():
@@ -74,15 +76,15 @@ class InferenceBase:
                         yield [np.zeros(x).astype(np.float32) for x in shapes]
 
                 converter = trt.TrtGraphConverterV2(
-                    input_saved_model_dir=submodel_path,
+                    input_saved_model_dir=str(submodel_path),
                     conversion_params=conversion_params
                 )
                 converter.convert()
                 converter.build(input_fn=my_input_fn)
                 
-                converter.save(converted_path)
+                converter.save(str(converted_path))
 
-            root = tf.saved_model.load(converted_path)
+            root = tf.saved_model.load(str(converted_path))
             func = root.signatures['serving_default']
             
             def predict(x):

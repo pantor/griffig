@@ -12,7 +12,7 @@ from ..utility.image import draw_around_box2, get_box_projection, get_inference_
 
 
 class InferencePlanarSemantic(InferenceBase):
-    def infer(self, image, object_image, method, box_data: BoxData = None, gripper: Gripper = None):
+    def infer(self, image: OrthographicImage, object_image: OrthographicImage, method: Method, box_data: BoxData = None, gripper: Gripper = None):
         assert object_image is not None
 
         start = time()
@@ -22,7 +22,14 @@ class InferencePlanarSemantic(InferenceBase):
 
         input_object_images = np.array(input_object_images) / np.iinfo(object_image.mat.dtype).max
 
+        pre_duration = time() - start
+        start = time()
+
         estimated_grasp_reward, estimated_object_reward = self.model([input_images, [input_object_images]])
+
+        nn_duration = time() - start
+        start = time()
+
         estimated_reward = estimated_object_reward * estimated_grasp_reward # np.cbrt(estimated_object_reward * np.power(estimated_grasp_reward, 2))
 
         if gripper:
@@ -38,7 +45,12 @@ class InferencePlanarSemantic(InferenceBase):
             action.pose = self.pose_from_index(index, estimated_reward.shape, image)
             action.pose.z = np.nan
             action.estimated_reward = estimated_reward[index]
-            action.calculation_duration = time() - start
+            action.detail_durations = {
+                'pre': pre_duration,
+                'nn': nn_duration,
+                'post': time() - start,
+            }
+            action.calculation_duration = sum(action.detail_durations.values())
 
             yield action
 

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <map>
+
 #include <affx/affine.hpp>
 
 
@@ -19,6 +21,8 @@ struct Grasp {
     size_t index; // Index of inference model
     double estimated_reward;
 
+    // Calculation durations
+    std::map<std::string, double> detail_durations;
     double calculation_duration {0.0};
 
     // explicit Grasp() { }
