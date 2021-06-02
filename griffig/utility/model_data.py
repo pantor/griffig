@@ -9,8 +9,9 @@ class ModelArchitecture(str, Enum):
     PlanarZ = 'planar-z'  # Regression-based z, and bc=0
     PlanarSemantic = 'planar-semantic'  # Semantic Grasping
     Lateral = 'lateral'  # Model-based z, b, and c
-    ActorCritic = 'actor-critic'  # Actor-critic architecture
+    ActorCritic = 'actor-critic'  # Actor-critic
     ModelBasedConvolution = 'model-based-convolution'  # Model-based convolution
+    NonFCNActorCritic = 'non-fcn-actor-critic'  # Non-fully-convolutional actor-critic
 
 
 class ModelData:

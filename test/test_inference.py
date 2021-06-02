@@ -13,7 +13,7 @@ if __name__ == '__main__':
         grasp = griffig.calculate_grasp_from_image(image, box_data)
 
         print(grasp)
-        print(f'Calculation duration: {grasp.calculation_duration:0.5f}')
+        print(f'Calculation duration: {grasp.calculation_duration:0.5f} {grasp.detail_durations}')
 
     img = griffig.draw_grasp_on_image(image, grasp)
     img.show()

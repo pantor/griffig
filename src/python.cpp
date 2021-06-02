@@ -28,7 +28,7 @@ PYBIND11_MODULE(_griffig, m) {
             return d;
         });
 
-    py::class_<Grasp>(m, "Grasp")
+    py::class_<Grasp>(m, "Grasp", py::dynamic_attr())
         .def(py::init<const Affine&, double, size_t, double>(), "pose"_a=Affine(), "stroke"_a=0.0, "index"_a=0, "estimated_reward"_a=0.0)
         .def_readwrite("pose", &Grasp::pose)
         .def_readwrite("stroke", &Grasp::stroke)
