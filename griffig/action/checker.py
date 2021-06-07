@@ -15,7 +15,7 @@ class Checker:
     def find_grasp(self, grasp_gen, image: OrthographicImage, box_data: BoxData = None, gripper: Gripper = None):
         grasp = next(grasp_gen)
 
-        while not self.check_safety(grasp, image, box_data, gripper):
+        while not self.check(grasp, image, box_data, gripper):
             try:
                 grasp = next(grasp_gen)
             except StopIteration:
@@ -28,7 +28,7 @@ class Checker:
 
         return grasp
 
-    def check_safety(self, grasp: Grasp, image: OrthographicImage, box_data: BoxData = None, gripper: Gripper = None):
+    def check(self, grasp: Grasp, image: OrthographicImage, box_data: BoxData = None, gripper: Gripper = None):
         self.converter.index_to_action(grasp)
 
         area_size = (0.1, 0.1)  # [m]

@@ -5,6 +5,8 @@ from ..infer.inference_semantic import InferencePlanarSemantic
 
 
 class Inference:
+    """A factory class for inference"""
+    
     @classmethod
     def create(cls, model_data, *params, **kwargs):
         if ModelArchitecture(model_data.architecture) == ModelArchitecture.ModelBasedConvolution:
