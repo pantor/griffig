@@ -7,6 +7,8 @@
 
 Griffig is a library for robotic grasping on pointclouds, learned from large-scale imitation and self-supervision. The published models are mostly trained in bin picking scenarios. It is very fast (< 50ms) for typical calculations and robust with grasp rates as high as 95% in complex but trained bin picking scenarios. This is the source code and corresponding library for our paper *Learning 6D Robotic Grasping using a Fully-convolutional Actor-critic Architecture*.
 
+[<div align="center"><img width="500" src="https://raw.githubusercontent.com/pantor/inja/master/doc/systemnew-sm.JPG"></div>](https://github.com/pantor/inja/releases)
+
 
 ## Installation
 
