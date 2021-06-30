@@ -4,6 +4,23 @@
     Robotic Grasping Learned from Imitation and Self-Supervision.
   </h3>
 </div>
+<p align="center">
+  <a href="https://github.com/pantor/griffig/actions">
+    <img src="https://github.com/pantor/griffig/workflows/CI/badge.svg" alt="CI">
+  </a>
+
+  <a href="https://github.com/pantor/griffig/issues">
+    <img src="https://img.shields.io/github/issues/pantor/griffig.svg" alt="Issues">
+  </a>
+
+  <a href="https://github.com/pantor/griffig/releases">
+    <img src="https://img.shields.io/github/v/release/pantor/griffig.svg?include_prereleases&sort=semver" alt="Releases">
+  </a>
+
+  <a href="https://github.com/pantor/griffig/blob/master/LICENSE">
+    <img src="https://img.shields.io/badge/license-LGPL-green.svg" alt="LGPL">
+  </a>
+</p>
 
 Griffig is a library for 6D robotic grasping, learned from large-scale imitation and self-supervised real-world training. We publish pre-trained models trained in bin picking scenarios that work without object model. Griffig is able to calculate grasp points with high performance (< 70ms), and is yet robust achieving grasp rates as high as 95% for typical use-cases. This repository contains the source code and corresponding library of our paper *Learning 6D Robotic Grasping using a Fully Convolutional Actor-Critic Architecture*.
 
