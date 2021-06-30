@@ -40,7 +40,7 @@ class Griffig:
         if box_data:
             self.renderer = Renderer(box_data, self.typical_camera_distance, self.model_data.pixel_size, self.model_data.depth_diff)
         else:
-            self.renderer = Renderer((752, 480), self.typical_camera_distance)
+            self.renderer = Renderer((752, 480), self.typical_camera_distance, self.model_data.pixel_size, self.model_data.depth_diff)
 
         self.last_grasp_successful = True
 
@@ -90,16 +90,25 @@ class Griffig:
         self.last_grasp_successful = False
 
     @classmethod
-    def convert_to_pillow_image(cls, image):
-        mat = (cv2.cvtColor(image.mat, cv2.COLOR_BGRA2RGBA) / 255).astype(np.uint8)
-        return Image.fromarray(mat, 'RGBA')
+    def convert_to_pillow_image(cls, image, channels='RGBD'):
+        mat = cv2.convertScaleAbs(cv2.cvtColor(image.mat, cv2.COLOR_BGRA2RGBA), alpha=(255.0/65535.0)).astype(np.uint8)
+        pillow_image = Image.fromarray(mat, 'RGBA')
+        if channels == 'RGB':
+            return pillow_image.convert('RGB')
+        elif channels == 'D':
+            return pillow_image.getchannel('A')
+        return pillow_image
 
     @classmethod
-    def draw_box_on_image(cls, image, box_data, draw_lines=False):
+    def draw_box_on_image(cls, image, box_data, draw_lines=False, channels='RGBD'):
         draw_around_box(image, box_data, draw_lines)
-        return cls.convert_to_pillow_image(image)
+        return cls.convert_to_pillow_image(image, channels)
 
     @classmethod
-    def draw_grasp_on_image(cls, image, grasp):
+    def draw_grasp_on_image(cls, image, grasp, channels='RGBD', convert_to_rgb=True):
+        if channels == 'D' and convert_to_rgb:
+            image.mat = cv2.cvtColor(image.mat[:, :, 3], cv2.COLOR_GRAY2RGB)
+            channels = 'RGB'
+
         draw_pose(image, RobotPose(grasp.pose, d=grasp.stroke))
-        return cls.convert_to_pillow_image(image)
+        return cls.convert_to_pillow_image(image, channels)

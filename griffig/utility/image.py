@@ -7,6 +7,14 @@ from _griffig import BoxData, Gripper, RobotPose, OrthographicImage
 from pyaffx import Affine
 
 
+def get_color_scale(dtype):
+    if dtype == np.float32:
+        return 1. / 255
+    if dtype == np.uint16:
+        return 255
+    return 1
+
+
 def crop(mat_image: Any, size_output: Sequence[float], vec=(0, 0)) -> Any:
     margin_x_lower = int(round((mat_image.shape[0] - size_output[0]) / 2 + vec[1]))
     margin_y_lower = int(round((mat_image.shape[1] - size_output[1]) / 2 + vec[0]))
@@ -134,8 +142,7 @@ def draw_line(
         color,
         thickness=1,
     ) -> None:
-    cm = 1. / 255 if image.mat.dtype == np.float32 else np.iinfo(image.mat.dtype).max / 255
-
+    cm = get_color_scale(image.mat.dtype)
     pose = image.pose.inverse() * action_pose
     pt1_projection = image.project(pose * pt1)
     pt2_projection = image.project(pose * pt2)
@@ -149,7 +156,7 @@ def draw_polygon(
         color,
         thickness=1,
     ) -> None:
-    cm = 1. / 255 if image.mat.dtype == np.float32 else np.iinfo(image.mat.dtype).max / 255
+    cm = get_color_scale(image.mat.dtype)
     pose = image.pose.inverse() * action_pose
     polygon_projection = np.asarray([tuple(image.project(pose * p)) for p in polygon])
     cv2.polylines(image.mat, [polygon_projection], True, (color[0] * cm, color[1] * cm, color[2] * cm), thickness, lineType=cv2.LINE_AA)
@@ -165,20 +172,20 @@ def draw_around_box(image: OrthographicImage, box_data: Optional[BoxData], draw_
     image_border = [Affine(*p) for p in _get_rect_contour([0.0, 0.0, 0.0], [10.0, 10.0, box_data.contour[0][2]])]
     box_projection = [image.project(image.pose.inverse() * p) for p in box_border]
 
-    color_multiplier = 1. / 255 if image.mat.dtype == np.float32 else np.iinfo(image.mat.dtype).max / 255
+    cm = get_color_scale(image.mat.dtype)
 
     if draw_lines:
         number_channels = image.mat.shape[-1] if len(image.mat.shape) > 2 else 1
 
-        color = np.array([255 * color_multiplier] * number_channels)  # White
+        color = np.array([255 * cm] * number_channels)  # White
         cv2.polylines(image.mat, [np.asarray(box_projection)], True, color, 2, lineType=cv2.LINE_AA)
 
     else:
         color_array = np.array([image.mat[np.clip(p[1], 0, image.mat.shape[0] - 1), np.clip(p[0], 0, image.mat.shape[1] - 1)] for p in box_projection], dtype=np.float32)
         if len(color_array.shape) > 1:
-            color_array[np.mean(color_array, axis=1) < color_multiplier] = np.nan
+            color_array[np.mean(color_array, axis=1) < cm] = np.nan
         else:
-            color_array[color_array < color_multiplier] = np.nan
+            color_array[color_array < cm] = np.nan
         color = np.nanmean(color_array, axis=0)
         np.nan_to_num(color, copy=False)
         image_border_projection = [image.project(image.pose.inverse() * p) for p in image_border]
@@ -189,7 +196,7 @@ def draw_object(image: OrthographicImage, object_data) -> None:
     if 'polygon' not in object_data:
         return
 
-    cm = 1. / 255 if image.mat.dtype == np.float32 else np.iinfo(image.mat.dtype).max / 255
+    cm = get_color_scale(image.mat.dtype)
     polygon = np.asarray([(int(p['x'] * image.mat.shape[1]), int(p['y'] * image.mat.shape[0])) for p in object_data['polygon']])
     cv2.polylines(image.mat, [polygon], True, (0 * cm, 255 * cm, 255 * cm), 1, lineType=cv2.LINE_AA)
 
@@ -229,19 +236,19 @@ def draw_around_box2(image, box_data: BoxData, draw_lines=False):
     image_border = [Affine(*p) for p in _get_rect_contour([0.0, 0.0, 0.0], [10.0, 10.0, box_data.contour[0][2]])]
     box_projection = [image.project(p) for p in box_border]
 
-    color_multiplier = 1. / 255 if image.mat.dtype == np.float32 else np.iinfo(image.mat.dtype).max / 255
+    cm = get_color_scale(image.mat.dtype)
 
     if draw_lines:
         number_channels = image.mat.shape[-1] if len(image.mat.shape) > 2 else 1
-        color = np.array([255 * color_multiplier] * number_channels)  # White
+        color = np.array([255 * cm] * number_channels)  # White
         cv2.polylines(image.mat, [np.asarray(box_projection)], True, color, 2, lineType=cv2.LINE_AA)
 
     else:
         color_array = np.array([image.mat[np.clip(p[1], 0, image.mat.shape[0] - 1), np.clip(p[0], 0, image.mat.shape[1] - 1)] for p in box_projection], dtype=np.float32)
         if len(color_array.shape) > 1:
-            color_array[np.mean(color_array, axis=1) < color_multiplier] = np.nan
+            color_array[np.mean(color_array, axis=1) < cm] = np.nan
         else:
-            color_array[color_array < color_multiplier] = np.nan
+            color_array[color_array < cm] = np.nan
 
         color = np.nanmean(color_array, axis=0)
         np.nan_to_num(color, copy=False)

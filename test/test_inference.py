@@ -9,11 +9,11 @@ if __name__ == '__main__':
 
     image = Loader.get_image('1')
 
-    for _ in range(30):
+    for _ in range(5):
         grasp = griffig.calculate_grasp_from_image(image, box_data)
 
         print(grasp)
         print(f'Calculation duration: {grasp.calculation_duration:0.5f} {grasp.detail_durations}')
 
-    img = griffig.draw_grasp_on_image(image, grasp)
+    img = griffig.draw_grasp_on_image(image, grasp, channels='D')
     img.show()

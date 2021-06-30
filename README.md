@@ -10,22 +10,11 @@ Griffig is a library for robotic grasping on pointclouds, learned from large-sca
 
 ## Installation
 
-### Python Package
-
 Griffig is a library for Python 3.7+. You can install Griffig via PyPI
 ```bash
 pip install griffig
 ```
-with OpenCV 4.5 and Tensorflow 2.4 as its main dependencies. Of course, a NVIDIA GPU with corresponding CUDA version is highly recommended. When building from source, Griffig additionally requires OpenGL, EGL and the wonderful pybind11 library.
-
-
-### Docker
-
-We provide a Docker container with a gRPC interface. You can pull and run the image via
-```
-docker run griffig.xyz/core-gpu -p 5000:5000
-```
-For more information, have a look at the gRPC guide [here](griffig/interfaces/grpc/Readme.md).
+with OpenCV 4.5 and Tensorflow 2.4 as its main dependencies. Of course, a NVIDIA GPU with corresponding CUDA version is highly recommended. When building from source, Griffig additionally requires OpenGL, EGL and the wonderful pybind11 library. We provide a Docker container to get started more easily.
 
 
 ## Tutorial
@@ -177,7 +166,7 @@ Griffig is written in C++17 and Python 3.7. It is tested against following depen
 - TensorFlow 2.4
 - PyBind11 2.6
 
-To build the docker image, call `docker build -t griffig.xyz/core-gpu .`.
+To build the docker image, call `docker build .`.
 
 
 ## License

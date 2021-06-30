@@ -247,22 +247,17 @@ public:
     std::array<double, 3> camera_position {0.0, 0.0, 0.0};
     cv::Mat color, depth_32f, depth_16u, mask;
 
-    explicit Renderer() {
+    // When no box_data is given: Griffig Main
+    explicit Renderer(const std::array<int, 2>& size, double typical_camera_distance, double pixel_size, double depth_diff): width(size[0]), height(size[1]), typical_camera_distance(typical_camera_distance), pixel_size(pixel_size), depth_diff(depth_diff) {
         init_egl(width, height);
     }
 
-    explicit Renderer(const std::array<int, 2>& size, double typical_camera_distance): width(size[0]), height(size[1]), typical_camera_distance(typical_camera_distance) {
-        init_egl(width, height);
-    }
-
-    explicit Renderer(const std::array<int, 2>& size, double pixel_size, double depth_diff, const std::optional<BoxData>& box_contour): width(size[0]), height(size[1]), pixel_size(pixel_size), depth_diff(depth_diff), box_contour(box_contour) {
-        init_egl(width, height);
-    }
-
+    // For C++ camera server, here we don't have model data (No Python wrapper)
     explicit Renderer(const std::array<int, 2>& size, const std::array<double, 3>& position): width(size[0]), height(size[1]), camera_position(position) {
         init_egl(width, height);
     }
 
+    // Recommended constructor: Learned Grasping, Griffig Main
     explicit Renderer(const BoxData& box_data, double typical_camera_distance, double pixel_size, double depth_diff): box_contour(box_data), typical_camera_distance(typical_camera_distance), pixel_size(pixel_size), depth_diff(depth_diff) {
         const auto size = box_data.get_rect(pixel_size, 5);
         width = size[0];
@@ -495,7 +490,7 @@ public:
                     if constexpr (draw_texture) {
                         glColor3ubv(&((PointTypes::XYZWRGBA *)cloud.vertices + i)->r);
                     }
-                } 
+                }
             }
         }
         glEnd();

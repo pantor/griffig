@@ -30,7 +30,7 @@ class Converter:
 
         mat_area_image = image_area.mat[:, :, 3]
         mat_area_image = mat_area_image.astype(np.float32) / np.iinfo(image_area.mat.dtype).max
-        mat_area_image[mat_area_image < 0.02] = np.NaN  # Make every not found pixel NaN        
+        mat_area_image[mat_area_image < 0.02] = np.NaN  # Make every not found pixel NaN
 
         # Get distance at gripper for possible collisions
         area_center_default_size = 0.012  # [m]
