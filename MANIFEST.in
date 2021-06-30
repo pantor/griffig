@@ -1,0 +1,6 @@
+recursive-include affx *
+recursive-include griffig *
+recursive-include include *
+recursive-include src *
+
+include CMakeLists.txt
