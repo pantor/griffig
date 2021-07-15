@@ -1,7 +1,7 @@
 <div align="center">
   <h1 align="center">Griffig</h1>
   <h3 align="center">
-    Robotic Grasping Learned from Imitation and Self-Supervision.
+    Robotic Manipulation Learned from Imitation and Self-Supervision.
   </h3>
 </div>
 <p align="center">
@@ -22,7 +22,7 @@
   </a>
 </p>
 
-Griffig is a library for 6D robotic grasping, learned from large-scale imitation and self-supervised real-world training. We publish pre-trained models trained in bin picking scenarios that work without object model. Griffig is able to calculate grasp points with high performance (< 70ms), and is yet robust achieving grasp rates as high as 95% for typical use-cases. This repository contains the source code and corresponding library of our paper *Learning 6D Robotic Grasping using a Fully Convolutional Actor-Critic Architecture*.
+Griffig is a library (in particular) for 6D robotic grasping, learned from large-scale imitation and self-supervised real-world training. Using an action-centric approach, Griffig does not need object models and requires only a simple depth camera as input. In our [model library](https://griffig.xyz), we publish models pre-trained in densly cluttered bin picking scenarios. Griffig is able to calculate grasp points with high performance (< 70ms), and is yet robust achieving grasp rates as high as 95% for typical use-cases. This repository contains the source code and corresponding library of our paper *Learning 6D Robotic Grasping using a Fully Convolutional Actor-Critic Architecture*.
 
 [<div align="center"><img width="460" src="https://raw.githubusercontent.com/pantor/inja/master/doc/systemnew-sm.JPG"></div>](https://github.com/pantor/inja/releases)
 
