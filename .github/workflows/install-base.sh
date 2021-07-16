@@ -1,3 +1,6 @@
+ls /usr/lib
+ls /usr/lib/x86_64-linux-gnu
+
 # # Install OpenCV
 # git clone https://github.com/opencv/opencv.git
 # cd opencv
