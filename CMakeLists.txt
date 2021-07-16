@@ -7,7 +7,6 @@ project(griffig VERSION 0.0.1 LANGUAGES CXX)
 find_package(OpenCV REQUIRED COMPONENTS core imgproc)
 find_package(OpenGL REQUIRED COMPONENTS OpenGL EGL)
 find_package(GLEW REQUIRED)
-find_package(Python 3.6 REQUIRED COMPONENTS Interpreter Development)
 find_package(pybind11 2.6 REQUIRED)
 
 

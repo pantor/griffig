@@ -4,7 +4,7 @@ cd opencv
 git checkout 4.5.2
 mkdir build && cd build
 cmake -DWITH_VTK=OFF -DWITH_GTK=OFF -DWITH_PROTOBUF=OFF -DBUILD_PERF_TESTS=OFF -DBUILD_TESTS=OFF -DWITH_WEBP=OFF ..
-make
+make -j2
 make install
 cd ../../
 
@@ -14,6 +14,6 @@ cd pybind11
 git checkout v2.6.2
 mkdir build && cd build
 cmake -DPYBIND11_TEST=OFF ..
-make
+make -j2
 make install
 cd ../../
