@@ -52,13 +52,13 @@ class Griffig:
         img = self.renderer.render_pointcloud_mat(pointcloud, pixel_size, min_depth, max_depth, position)
         return self.convert_to_pillow_image(img)
 
-    def calculate_grasp(self, pointcloud: Pointcloud, camera_pose=None, box_data=None, gripper=None, method=None, return_image=False):
+    def calculate_grasp(self, pointcloud: Pointcloud, camera_pose=None, box_data=None, gripper=None, method=None, return_image=False, channels='RGBD'):
         image = self.renderer.render_pointcloud(pointcloud)
         grasp = self.calculate_grasp_from_image(image, box_data=box_data, gripper=gripper, method=method)
 
         if return_image:
             image = image.clone()
-            return grasp, self.draw_grasp_on_image(image, grasp)
+            return grasp, self.draw_grasp_on_image(image, grasp, channels=channels)
         return grasp
 
     def calculate_grasp_from_image(self, image, box_data=None, gripper=None, method=None):

@@ -472,6 +472,21 @@ public:
         // glPointSize((float)size.width / 640);
         auto color_format = GL_BGRA;
 
+        // GLuint vertBufID {0};
+        // glGenBuffers(1, &vertBufID);
+        // glBindBuffer(GL_ARRAY_BUFFER, vertBufID);
+        // glBufferData(GL_ARRAY_BUFFER, cloud.size*sizeof(PointTypes::XYZ), cloud.vertices, GL_STATIC_DRAW);
+
+        // glBindBuffer(GL_ARRAY_BUFFER, vertBufID);
+        // int stride = sizeof(PointTypes::XYZ);
+        // char *offset = (char*)NULL;
+
+        // glVertexPointer(3, GL_FLOAT, stride, offset);
+        // glEnableClientState(GL_VERTEX_ARRAY);
+
+        // glDrawArrays(GL_POINTS, 0, cloud.size);
+        // glDisableClientState(GL_VERTEX_ARRAY);
+
         glBegin(GL_POINTS);
         {
             if (cloud.point_type == PointType::XYZ) {

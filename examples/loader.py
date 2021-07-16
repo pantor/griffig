@@ -7,7 +7,7 @@ from griffig import OrthographicImage
 
 
 class Loader:
-    data_path = Path(__file__).parent.absolute() / 'data'
+    data_path = Path(__file__).parent.absolute().parent / 'test' / 'data'
 
     @classmethod
     def get_image(cls, episode_id: str):

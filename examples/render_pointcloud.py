@@ -9,6 +9,8 @@ from griffig import Griffig, Pointcloud, Renderer
 if __name__ == '__main__':
     base = Path(__file__).parent
     rospy.init_node('pointcloud_renderer', anonymous=True)
+
+    # Orthographic image renderer: (width, height), typical distance [m], pixel density [px/m], depth difference [m]
     renderer = Renderer((752, 480), 0.41, 2000.0, 0.19)
 
     pointcloud_message = rospy.wait_for_message('/camera/depth/color/points', PointCloud2)

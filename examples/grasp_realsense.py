@@ -3,6 +3,7 @@ from argparse import ArgumentParser
 import pyrealsense2 as rs
 
 from griffig import Griffig, Gripper, BoxData, Pointcloud
+from loader import Loader
 
 
 class RealsenseReader:
@@ -25,7 +26,7 @@ class RealsenseReader:
 
 if __name__ == '__main__':
     parser = ArgumentParser()
-    parser.add_argument('-i', '--input', type=str, default='/home/berscheid/Documents/bin_picking/griffig/test/data/20210318_110437.bag')
+    parser.add_argument('-i', '--input', type=str, default=str(Loader.data_path / '20210318_110437.bag'))
     args = parser.parse_args()
 
     box_data = BoxData(
@@ -42,8 +43,7 @@ if __name__ == '__main__':
         model='two-finger-planar',  # Use the default model for a two-finger gripper
         gripper=gripper,
         box_data=box_data,
-        typical_camera_distance=0.41,
-        avoid_collisions=True,
+        typical_camera_distance=0.41,  # Typical distance between camera and bin (used for depth image rendering) [m]
     )
 
     realsense = RealsenseReader(args.input)
@@ -51,6 +51,7 @@ if __name__ == '__main__':
 
     pointcloud = Pointcloud(realsense_frames=frames)
 
-    grasp, image = griffig.calculate_grasp(pointcloud, return_image=True)
+    # Return image (depth channel) with grasp for visualization
+    grasp, image = griffig.calculate_grasp(pointcloud, return_image=True, channels='D')
     print(grasp)
     image.show()

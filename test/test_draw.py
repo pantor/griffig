@@ -9,7 +9,7 @@ from loader import Loader
 
 
 class DrawTestCase(unittest.TestCase):
-    output_path = Path(__file__).parent / 'data'
+    output_path = Path(__file__).parent.absolute() / 'data'
 
     def setUp(self):
         self.box_data = BoxData([-0.002, -0.0065, 0.0], [0.174, 0.282, 0.0])

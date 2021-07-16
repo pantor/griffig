@@ -1,6 +1,7 @@
 import os
 import re
 import subprocess
+import sys
 
 from setuptools import setup, Extension, find_packages
 from setuptools.command.build_ext import build_ext
@@ -37,27 +38,39 @@ class CMakeBuild(build_ext):
     def build_extension(self, ext):
         extdir = os.path.abspath(os.path.dirname(self.get_ext_fullpath(ext.name)))
 
+        # required for auto-detection of auxiliary "native" libs
+        if not extdir.endswith(os.path.sep):
+            extdir += os.path.sep
+
         build_type = os.environ.get('BUILD_TYPE', 'Release')
-        build_args = ['--config', build_type]
-        build_args += ['--', '-j2']
+        build_args = [
+            '--config', build_type,
+            '--', '-j2',
+        ]
 
         # Pile all .so in one place and use $ORIGIN as RPATH
-        cmake_args = ['-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=' + extdir]
-        cmake_args += ['-DCMAKE_BUILD_WITH_INSTALL_RPATH=TRUE']
-        cmake_args += ['-DCMAKE_INSTALL_RPATH={}'.format('$ORIGIN')]
-        cmake_args += ['-DCMAKE_BUILD_TYPE=' + build_type]
+        cmake_args = [
+            '-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=' + extdir,
+            '-DCMAKE_ARCHIVE_OUTPUT_DIRECTORY=' + extdir,
+            '-DCMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE=' + extdir,
+            '-DCMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE=' + extdir,
+            '-DPYTHON_EXECUTABLE={}'.format(sys.executable),
+            '-DCMAKE_BUILD_WITH_INSTALL_RPATH=TRUE',
+            '-DCMAKE_INSTALL_RPATH={}'.format('$ORIGIN'),
+            '-DCMAKE_BUILD_TYPE=' + build_type,
+        ]
 
         if not os.path.exists(self.build_temp):
             os.makedirs(self.build_temp)
 
         subprocess.check_call(['cmake', ext.sourcedir] + cmake_args, cwd=self.build_temp)
-        subprocess.check_call(['cmake', '--build', '.', '--target', ext.name] + build_args, cwd=self.build_temp)
+        subprocess.check_call(['cmake', '--build', '.'] + build_args, cwd=self.build_temp)
 
 
 setup(
     name='griffig',
     version='0.0.1',
-    description='Robotic grasping',
+    description='Robotic Manipulation Learned from Imitation and Self-Supervision',
     long_description=long_description,
     long_description_content_type='text/markdown',
     author='Lars Berscheid',
