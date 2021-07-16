@@ -88,13 +88,13 @@ setup(
         'License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)',
         'Programming Language :: C++',
     ],
-    # install_requires=[
-    #     'loguru',
+    install_requires=[
+        'loguru',
     #     'tensorflow==2.4',
     #     'opencv-python',
     #     'numpy',
     #     'scipy==1.5',
-    #     'Pillow',
-    # ],
+        'Pillow',
+    ],
     python_requires='>=3.6',
 )

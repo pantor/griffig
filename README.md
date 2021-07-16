@@ -122,12 +122,7 @@ griffig = Griffig(
 )
 ```
 
-Griffig includes a small model library for different tasks / gripper and downloads them automatically. At start, following models are avialable:
-
-Model Name         | Description
------------------- | ------------------------------------------------------------------
-two-finger-planar  | Planar grasps of a two finger gripper (stroke between 2 and 9cm)
-two-finger         | 6 DoF grasps with a fully convolutional actor-critic architecture
+Griffig includes a small model library for different tasks / gripper and downloads them automatically. You can find the complete list at [griffig.xyz](https://griffig.xyz/model-library).
 
 
 ### Pointcloud Class
