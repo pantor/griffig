@@ -10,7 +10,9 @@
 
 # ls /usr/include
 # ls /usr/lib
-ls /usr/lib64
+# ls /usr/lib64
+
+ls /usr/lib64/libOpen*.so
 
 # # Install OpenCV
 # git clone https://github.com/opencv/opencv.git
