@@ -1,4 +1,5 @@
 ls /usr/lib
+ls /usr/lib64
 
 # # Install OpenCV
 # git clone https://github.com/opencv/opencv.git
