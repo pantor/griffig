@@ -58,6 +58,7 @@ class CMakeBuild(build_ext):
             '-DCMAKE_BUILD_WITH_INSTALL_RPATH=TRUE',
             '-DCMAKE_INSTALL_RPATH={}'.format('$ORIGIN'),
             '-DCMAKE_BUILD_TYPE=' + build_type,
+            '-DCMAKE_FIND_DEBUG_MODE=ON',
         ]
 
         if not os.path.exists(self.build_temp):
