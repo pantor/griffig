@@ -8,6 +8,7 @@ ln -s /usr/lib64/libGLU.so /usr/lib
 ln -s /usr/lib64/libGLU.so.1 /usr/lib
 ln -s /usr/lib64/libGLU.so.1.3.1 /usr/lib
 
+ls /usr/include
 ls /usr/lib
 # ls /usr/lib64
 
