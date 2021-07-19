@@ -8,6 +8,7 @@ find_package(GLEW REQUIRED)
 find_package(OpenCV REQUIRED COMPONENTS core imgproc)
 find_package(OpenGL REQUIRED COMPONENTS EGL)
 find_package(pybind11 2.6 REQUIRED)
+find_package (Python COMPONENTS NumPy)
 
 
 add_subdirectory(affx)
@@ -16,7 +17,7 @@ add_subdirectory(affx)
 add_library(griffig src/griffig.cpp)
 target_compile_features(griffig PUBLIC cxx_std_17)
 target_include_directories(griffig PUBLIC include)
-target_link_libraries(griffig PUBLIC affx opencv_core opencv_imgproc OpenGL::EGL OpenGL::GLU GLEW::GLEW pybind11::embed)
+target_link_libraries(griffig PUBLIC affx opencv_core opencv_imgproc OpenGL::EGL OpenGL::GLU GLEW::GLEW pybind11::embed Python::NumPy)
 
 
 pybind11_add_module(_griffig src/python.cpp)
