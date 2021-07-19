@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.14)
 
 
 project(griffig VERSION 0.0.1 LANGUAGES CXX)
+list(APPEND CMAKE_PREFIX_PATH "/another/library/path")
 
 
 find_package(Python REQUIRED COMPONENTS NumPy)
