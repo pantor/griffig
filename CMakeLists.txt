@@ -8,8 +8,8 @@ find_package(GLEW REQUIRED)
 find_package(OpenCV REQUIRED COMPONENTS core imgproc)
 find_package(OpenGL REQUIRED COMPONENTS EGL)
 find_package(pybind11 2.6 REQUIRED)
-find_package (Python COMPONENTS NumPy)
-
+find_package(Python REQUIRED COMPONENTS NumPy)
+message(${Python_NumPy_INCLUDE_DIRS})
 
 add_subdirectory(affx)
 
