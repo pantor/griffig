@@ -1,7 +1,7 @@
 ln -s /usr/lib64/libOpenGL.so.0 /usr/lib64/libOpenGL.so
 # ls /usr/lib/
 # ls /usr/lib64/
-# ls ~/.local/
+pip show numpy
 ls /usr/local/lib/
 
 # # Install Eigen
