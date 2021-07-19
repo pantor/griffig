@@ -27,15 +27,15 @@ make -j2
 make install
 cd ../../
 
-# Install OpenCV
-git clone https://github.com/opencv/opencv.git
-cd opencv
-git checkout 4.5.2
-mkdir build && cd build
-cmake -DWITH_VTK=OFF -DWITH_GTK=OFF -DWITH_PROTOBUF=OFF -DBUILD_PERF_TESTS=OFF -DBUILD_TESTS=OFF -DWITH_WEBP=OFF -DBUILD_opencv_ml=OFF -DBUILD_opencv_calib3d=OFF -DBUILD_opencv_videoio=OFF -DBUILD_opencv_gapi=OFF -DBUILD_opencv_stitching=OFF -DBUILD_opencv_objdetect=OFF -DBUILD_opencv_flann=OFF -DBUILD_opencv_video=OFF -DBUILD_opencv_features2d=OFF ..
-make -j2
-make install
-cd ../../
+# # Install OpenCV
+# git clone https://github.com/opencv/opencv.git
+# cd opencv
+# git checkout 4.5.2
+# mkdir build && cd build
+# cmake -DWITH_VTK=OFF -DWITH_GTK=OFF -DWITH_PROTOBUF=OFF -DBUILD_PERF_TESTS=OFF -DBUILD_TESTS=OFF -DWITH_WEBP=OFF -DBUILD_opencv_ml=OFF -DBUILD_opencv_calib3d=OFF -DBUILD_opencv_videoio=OFF -DBUILD_opencv_gapi=OFF -DBUILD_opencv_stitching=OFF -DBUILD_opencv_objdetect=OFF -DBUILD_opencv_flann=OFF -DBUILD_opencv_video=OFF -DBUILD_opencv_features2d=OFF ..
+# make -j2
+# make install
+# cd ../../
 
 # ls /usr/lib
 # ls /usr/lib64

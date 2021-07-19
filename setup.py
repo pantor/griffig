@@ -49,13 +49,15 @@ class CMakeBuild(build_ext):
             '--', '-j2',
         ]
 
+        print(sys.executable)
+
         # Pile all .so in one place and use $ORIGIN as RPATH
         cmake_args = [
             '-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=' + extdir,
             '-DCMAKE_ARCHIVE_OUTPUT_DIRECTORY=' + extdir,
             '-DCMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE=' + extdir,
             '-DCMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE=' + extdir,
-            '-DPYTHON_EXECUTABLE=' + sys.executable,
+            '-DPYTHON3_EXECUTABLE=' + sys.executable,
             '-DCMAKE_BUILD_WITH_INSTALL_RPATH=TRUE',
             '-DCMAKE_INSTALL_RPATH=$ORIGIN',
             '-DCMAKE_BUILD_TYPE=' + build_type,
