@@ -14,8 +14,8 @@ with open('README.md', 'r') as readme_file:
 
 
 class CMakeExtension(Extension):
-    def __init__(self, name, sourcedir='', sources=[], include_dirs=[]):
-        Extension.__init__(self, name, sources=sources, include_dirs=include_dirs)
+    def __init__(self, name, sourcedir=''):
+        Extension.__init__(self, name, sources=[])
         self.sourcedir = os.path.abspath(sourcedir)
 
 
@@ -59,7 +59,7 @@ class CMakeBuild(build_ext):
             '-DCMAKE_BUILD_WITH_INSTALL_RPATH=TRUE',
             '-DCMAKE_INSTALL_RPATH=$ORIGIN',
             '-DCMAKE_BUILD_TYPE=' + build_type,
-            '-DCMAKE_FIND_DEBUG_MODE=ON',
+            '-DCMAKE_FIND_DEBUG_MODE=OFF',
         ]
 
         if not os.path.exists(self.build_temp):
@@ -79,7 +79,7 @@ setup(
     url='https://github.com/pantor/griffig',
     packages=find_packages(),
     license='LGPL',
-    ext_modules=[CMakeExtension('_griffig', include_dirs=[numpy.get_include()]), CMakeExtension('pyaffx')],
+    ext_modules=[CMakeExtension('_griffig'), CMakeExtension('pyaffx')],
     cmdclass=dict(build_ext=CMakeBuild),
     keywords=['robot', 'robotics', 'grasping', 'robot-learning'],
     classifiers=[
