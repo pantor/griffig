@@ -21,7 +21,7 @@ git clone https://github.com/opencv/opencv.git
 cd opencv
 git checkout 4.5.2
 mkdir build && cd build
-cmake -DWITH_VTK=OFF -DWITH_GTK=OFF -DWITH_PROTOBUF=OFF -DBUILD_PERF_TESTS=OFF -DBUILD_TESTS=OFF -DWITH_WEBP=OFF ..
+cmake -DWITH_VTK=OFF -DWITH_GTK=OFF -DWITH_PROTOBUF=OFF -DBUILD_PERF_TESTS=OFF -DBUILD_TESTS=OFF -DWITH_WEBP=OFF -DBUILD_SHARED_LIBS=OFF ..
 make -j2
 make install
 cd ../../
