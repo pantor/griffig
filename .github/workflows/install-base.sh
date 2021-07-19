@@ -1,3 +1,15 @@
+# ln -s /usr/lib64/libEGL.so /usr/lib
+# ln -s /usr/lib64/libEGL.so.1 /usr/lib
+# ln -s /usr/lib64/libEGL.so.1.0.0 /usr/lib
+# ln -s /usr/lib64/libGL.so /usr/lib
+ln -s /usr/lib64/libOpenGL.so.0 /usr/lib64/libOpenGL.so
+# ln -s /usr/lib64/libGL.so.1.2.0 /usr/lib
+# ln -s /usr/lib64/libGLU.so /usr/lib
+# ln -s /usr/lib64/libGLU.so.1 /usr/lib
+# ln -s /usr/lib64/libGLU.so.1.3.1 /usr/lib
+
+# ls /usr/include
+# ls /usr/lib
 ls /usr/lib64
 
 # # Install OpenCV
