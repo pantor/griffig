@@ -59,6 +59,7 @@ class CMakeBuild(build_ext):
             '-DCMAKE_BUILD_WITH_INSTALL_RPATH=TRUE',
             '-DCMAKE_INSTALL_RPATH={}'.format('$ORIGIN'),
             '-DCMAKE_BUILD_TYPE=' + build_type,
+            f'-DPython_NumPy_INCLUDE_DIRS={numpy.get_include()}',
             '-DCMAKE_FIND_DEBUG_MODE=OFF',
         ]
 
@@ -69,6 +70,7 @@ class CMakeBuild(build_ext):
         subprocess.check_call(['cmake', '--build', '.'] + build_args, cwd=self.build_temp)
 
 include_dirs = [numpy.get_include()]
+print(include_dirs)
 setup(
     name='griffig',
     version='0.0.1',
