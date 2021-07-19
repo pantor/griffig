@@ -57,11 +57,10 @@ class CMakeBuild(build_ext):
             '-DCMAKE_ARCHIVE_OUTPUT_DIRECTORY=' + extdir,
             '-DCMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE=' + extdir,
             '-DCMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE=' + extdir,
-            '-DPYTHON3_EXECUTABLE=' + sys.executable,
+            '-DPython3_EXECUTABLE=python3.9',
             '-DCMAKE_BUILD_WITH_INSTALL_RPATH=TRUE',
             '-DCMAKE_INSTALL_RPATH=$ORIGIN',
             '-DCMAKE_BUILD_TYPE=' + build_type,
-            # '-DBUILD_SHARED_LIBS=OFF',
             '-DCMAKE_FIND_DEBUG_MODE=OFF',
         ]
 

@@ -39,5 +39,5 @@ cd ../../
 
 # ls /usr/lib
 # ls /usr/lib64
-ls /usr/local/lib
-# ls /usr/local/lib64
+# ls /usr/local/lib
+ls /usr/local/lib64
