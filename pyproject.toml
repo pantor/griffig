@@ -1,0 +1,11 @@
+[project]
+requires-python = ">=3.6"
+
+
+[build-system]
+requires = ["setuptools>=42", "wheel","oldest-supported-numpy"]
+build-backend = "setuptools.build_meta"
+
+
+[tool.cibuildwheel]
+before-build = "sh .github/workflows/install-base.sh"

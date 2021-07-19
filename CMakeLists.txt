@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.14)
 project(griffig VERSION 0.0.1 LANGUAGES CXX)
 
 
-find_package(Python REQUIRED COMPONENTS NumPy HINTS "/opt/_internal/cpython-3.6.14/lib/python3.6/site-packages/numpy/core/include")
+find_package(Python REQUIRED COMPONENTS NumPy)  #  HINTS "/opt/_internal/cpython-3.6.14/lib/python3.6/site-packages/numpy/core/include"
 message(${Python_NumPy_INCLUDE_DIRS})
 
 find_package(GLEW REQUIRED)

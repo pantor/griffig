@@ -59,8 +59,7 @@ class CMakeBuild(build_ext):
             '-DCMAKE_BUILD_WITH_INSTALL_RPATH=TRUE',
             '-DCMAKE_INSTALL_RPATH={}'.format('$ORIGIN'),
             '-DCMAKE_BUILD_TYPE=' + build_type,
-            f'-DPython_NumPy_INCLUDE_DIRS={numpy.get_include()}',
-            '-DCMAKE_FIND_DEBUG_MODE=OFF',
+            '-DCMAKE_FIND_DEBUG_MODE=ON',
         ]
 
         if not os.path.exists(self.build_temp):
@@ -95,7 +94,6 @@ setup(
         'setuptools>=18.0',
         'numpy',
     ],
-    include_dirs=[numpy.get_include()],
     install_requires=[
         'loguru',
         'tensorflow==2.4',
