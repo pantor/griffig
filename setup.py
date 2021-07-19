@@ -49,7 +49,7 @@ class CMakeBuild(build_ext):
             '--', '-j2',
         ]
 
-        print(sys.executable)
+        print('Executable: ', sys.executable)
 
         # Pile all .so in one place and use $ORIGIN as RPATH
         cmake_args = [
