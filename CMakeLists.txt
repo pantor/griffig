@@ -4,7 +4,14 @@ cmake_minimum_required(VERSION 3.14)
 project(griffig VERSION 0.0.1 LANGUAGES CXX)
 
 
-find_package(Python3 REQUIRED COMPONENTS NumPy)
+set(PYTHON3_VERSION "" CACHE STRING "Python Version")
+
+if (PYTHON3_VERSION)
+    find_package(Python3 ${PYTHON3_VERSION} EXACT REQUIRED COMPONENTS NumPy)
+else()
+    find_package(Python3 REQUIRED COMPONENTS NumPy)
+endif()
+
 find_package(Eigen3 REQUIRED)
 find_package(GLEW REQUIRED)
 find_package(OpenCV REQUIRED COMPONENTS core imgproc)
