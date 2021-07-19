@@ -69,8 +69,6 @@ class CMakeBuild(build_ext):
         subprocess.check_call(['cmake', ext.sourcedir] + cmake_args, cwd=self.build_temp)
         subprocess.check_call(['cmake', '--build', '.'] + build_args, cwd=self.build_temp)
 
-include_dirs = [numpy.get_include()]
-print(include_dirs)
 setup(
     name='griffig',
     version='0.0.1',
@@ -82,7 +80,7 @@ setup(
     url='https://github.com/pantor/griffig',
     packages=find_packages(),
     license='LGPL',
-    ext_modules=[CMakeExtension('_griffig', include_dirs=include_dirs), CMakeExtension('pyaffx')],
+    ext_modules=[CMakeExtension('_griffig', include_dirs=[numpy.get_include()]), CMakeExtension('pyaffx')],
     cmdclass=dict(build_ext=CMakeBuild),
     keywords=['robot', 'robotics', 'grasping', 'robot-learning'],
     classifiers=[
@@ -97,7 +95,7 @@ setup(
         'setuptools>=18.0',
         'numpy',
     ],
-    include_dirs=include_dirs,
+    include_dirs=[numpy.get_include()],
     install_requires=[
         'loguru',
         'tensorflow==2.4',
