@@ -89,6 +89,11 @@ setup(
         'License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)',
         'Programming Language :: C++',
     ],
+    setup_requires=[
+        # Setuptools 18.0 properly handles Cython extensions.
+        'setuptools>=18.0',
+        'numpy',
+    ],
     install_requires=[
         'loguru',
         'tensorflow==2.4',
