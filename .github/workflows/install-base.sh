@@ -22,7 +22,7 @@ git clone https://github.com/pybind/pybind11.git
 cd pybind11
 git checkout v2.6.2
 mkdir build && cd build
-cmake -DPYBIND11_TEST=OFF ..
+cmake -DPYBIND11_TEST=OFF -DPYBIND11_PYTHON_VERSION=3.9 ..
 make -j2
 make install
 cd ../../
