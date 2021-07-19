@@ -1,5 +1,6 @@
 import os
 import re
+import numpy
 import subprocess
 import sys
 
@@ -41,6 +42,8 @@ class CMakeBuild(build_ext):
         # required for auto-detection of auxiliary "native" libs
         if not extdir.endswith(os.path.sep):
             extdir += os.path.sep
+
+        ext.include_dirs.insert(0, numpy.get_include())
 
         build_type = os.environ.get('BUILD_TYPE', 'Release')
         build_args = [
