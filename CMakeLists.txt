@@ -4,11 +4,12 @@ cmake_minimum_required(VERSION 3.14)
 project(griffig VERSION 0.0.1 LANGUAGES CXX)
 
 
-find_package(Python3 REQUIRED COMPONENTS NumPy)  #  HINTS "/opt/_internal/cpython-3.6.14/lib/python3.6/site-packages/numpy/core/include"
+find_package(Python3 REQUIRED COMPONENTS NumPy)
 find_package(OpenCV REQUIRED COMPONENTS core imgproc)
 find_package(OpenGL REQUIRED COMPONENTS EGL)
 find_package(GLEW REQUIRED)
 find_package(pybind11 2.6 REQUIRED)
+
 
 add_subdirectory(affx)
 

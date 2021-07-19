@@ -3,8 +3,7 @@ ln -s /usr/lib64/libOpenGL.so.0 /usr/lib64/libOpenGL.so
 # python3.6 -m pip install --no-cache-dir numpy
 # python3.9 -m pip install --no-cache-dir numpy
 # python3.10 -m pip install --no-cache-dir numpy
-# sed -i '3092s/.*/"import sys; import numpy; sys.stdout.write(numpy.get_include())"/' /opt/_internal/tools/lib/python3.9/site-packages/cmake/data/share/cmake-3.21/Modules/FindPython/Support.cmake
-
+sed -i '3092s/.*/"import sys; import numpy; sys.stdout.write(numpy.get_include())"/' /opt/_internal/tools/lib/python3.9/site-packages/cmake/data/share/cmake-3.21/Modules/FindPython/Support.cmake
 
 
 # # Install Eigen
