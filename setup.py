@@ -14,8 +14,8 @@ with open('README.md', 'r') as readme_file:
 
 
 class CMakeExtension(Extension):
-    def __init__(self, name, sourcedir=''):
-        Extension.__init__(self, name, sources=[])
+    def __init__(self, name, sourcedir='', sources=[], include_dirs=[]):
+        Extension.__init__(self, name, sources=sources, include_dirs=include_dirs)
         self.sourcedir = os.path.abspath(sourcedir)
 
 
@@ -43,8 +43,6 @@ class CMakeBuild(build_ext):
         if not extdir.endswith(os.path.sep):
             extdir += os.path.sep
 
-        ext.include_dirs.insert(0, numpy.get_include())
-
         build_type = os.environ.get('BUILD_TYPE', 'Release')
         build_args = [
             '--config', build_type,
@@ -61,7 +59,7 @@ class CMakeBuild(build_ext):
             '-DCMAKE_BUILD_WITH_INSTALL_RPATH=TRUE',
             '-DCMAKE_INSTALL_RPATH={}'.format('$ORIGIN'),
             '-DCMAKE_BUILD_TYPE=' + build_type,
-            '-DCMAKE_FIND_DEBUG_MODE=ON',
+            '-DCMAKE_FIND_DEBUG_MODE=OFF',
         ]
 
         if not os.path.exists(self.build_temp):
@@ -70,7 +68,7 @@ class CMakeBuild(build_ext):
         subprocess.check_call(['cmake', ext.sourcedir] + cmake_args, cwd=self.build_temp)
         subprocess.check_call(['cmake', '--build', '.'] + build_args, cwd=self.build_temp)
 
-
+include_dirs = [numpy.get_include()]
 setup(
     name='griffig',
     version='0.0.1',
@@ -82,7 +80,7 @@ setup(
     url='https://github.com/pantor/griffig',
     packages=find_packages(),
     license='LGPL',
-    ext_modules=[CMakeExtension('_griffig'), CMakeExtension('pyaffx')],
+    ext_modules=[CMakeExtension('_griffig', include_dirs=include_dirs), CMakeExtension('pyaffx')],
     cmdclass=dict(build_ext=CMakeBuild),
     keywords=['robot', 'robotics', 'grasping', 'robot-learning'],
     classifiers=[
@@ -97,7 +95,7 @@ setup(
         'setuptools>=18.0',
         'numpy',
     ],
-    include_dirs=[numpy.get_include()],
+    include_dirs=include_dirs,
     install_requires=[
         'loguru',
         'tensorflow==2.4',
