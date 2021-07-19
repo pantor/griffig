@@ -97,6 +97,7 @@ setup(
         'setuptools>=18.0',
         'numpy',
     ],
+    include_dirs=[numpy.get_include()],
     install_requires=[
         'loguru',
         'tensorflow==2.4',
