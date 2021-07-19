@@ -1,5 +1,6 @@
 # Fix Cmake find *.so.0
 ln -s /usr/lib64/libOpenGL.so.0 /usr/lib64/libOpenGL.so
+export LD_LIBRARY_PATH=/usr/local/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
 
 # Fix CMake find Numpy
 python3.9 -m pip install --no-cache-dir numpy
@@ -31,7 +32,7 @@ git clone https://github.com/opencv/opencv.git
 cd opencv
 git checkout 4.5.2
 mkdir build && cd build
-cmake -DWITH_VTK=OFF -DWITH_GTK=OFF -DWITH_PROTOBUF=OFF -DBUILD_PERF_TESTS=OFF -DBUILD_TESTS=OFF -DWITH_WEBP=OFF -DBUILD_SHARED_LIBS=OFF ..
+cmake -DWITH_VTK=OFF -DWITH_GTK=OFF -DWITH_PROTOBUF=OFF -DBUILD_PERF_TESTS=OFF -DBUILD_TESTS=OFF -DWITH_WEBP=OFF ..
 make -j2
 make install
 cd ../../
