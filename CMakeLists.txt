@@ -4,12 +4,13 @@ cmake_minimum_required(VERSION 3.12)
 project(griffig VERSION 0.0.1 LANGUAGES CXX)
 
 
+find_package(Python REQUIRED COMPONENTS NumPy)
+message(${Python_NumPy_INCLUDE_DIRS})
+
 find_package(GLEW REQUIRED)
 find_package(OpenCV REQUIRED COMPONENTS core imgproc)
 find_package(OpenGL REQUIRED COMPONENTS EGL)
 find_package(pybind11 2.6 REQUIRED)
-find_package(Python REQUIRED COMPONENTS NumPy)
-message(${Python_NumPy_INCLUDE_DIRS})
 
 add_subdirectory(affx)
 
