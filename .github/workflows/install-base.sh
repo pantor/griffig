@@ -1,5 +1,5 @@
 ln -s /usr/lib64/libOpenGL.so.0 /usr/lib64/libOpenGL.so
-ls /usr/lib64
+ls /usr/share/cmake
 
 # Install OpenCV
 git clone https://github.com/opencv/opencv.git
