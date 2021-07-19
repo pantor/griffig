@@ -1,4 +1,12 @@
 ln -s /usr/lib64/libOpenGL.so.0 /usr/lib64/libOpenGL.so
+# ls /usr/lib/
+# ls /usr/lib64/
+# /opt/python/cp36-cp36m/bin/pip install --no-cache-dir numpy
+# /opt/python/cp39-cp39m/bin/pip install --no-cache-dir numpy
+python3.9 -m pip install --no-cache-dir numpy
+
+# /opt/python/cp36-cp36m/bin/pip show numpy
+# ls /usr/local/lib/
 
 # # Install Eigen
 # git clone https://gitlab.com/libeigen/eigen.git
