@@ -31,11 +31,11 @@ jobs:
     #     pre-build-command: 'sh .github/workflows/install-base.sh'
 
     - name: Build wheels
-        run: |
-          python -m cibuildwheel --output-dir dist
-        env:
-          CIBW_BUILD: cp36-* cp37-* cp38-* cp39-*
-          # CIBW_BEFORE_BUILD: sh .github/workflows/install-base.sh
+      env:
+        CIBW_BUILD: cp36-* cp37-* cp38-* cp39-*
+        # CIBW_BEFORE_BUILD: sh .github/workflows/install-base.sh
+      run: |
+        python -m cibuildwheel --output-dir dist
 
     - name: Publish
       env:
