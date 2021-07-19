@@ -8,6 +8,8 @@ python3.6 -m pip install --no-cache-dir numpy
 python3.9 -m pip install --no-cache-dir numpy
 python3.10 -m pip install --no-cache-dir numpy
 
+python3.10 -c "import sys\ntry: import numpy; sys.stdout.write(numpy.get_include())\nexcept:pass\n"
+
 # /opt/python/cp36-cp36m/bin/pip show numpy
 # ls /usr/local/lib/
 
