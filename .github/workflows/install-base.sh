@@ -15,7 +15,7 @@ make -j2
 make install
 cd ../../
 
-# Install PyBind11
+# Checkout PyBind11
 git clone https://github.com/pybind/pybind11.git
 cd pybind11
 git checkout v2.6.2
