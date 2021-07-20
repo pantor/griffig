@@ -31,7 +31,8 @@ Griffig is a library (in particular) for 6D robotic grasping, learned from large
 
 Griffig is a library for Python 3.7+, wrapping a core written in C++17. You can install Griffig via [PyPI](https://pypi.org/project/griffig/)
 ```bash
-(sudo) apt install libeigen3-dev libgl1-mesa-dev libglu1-mesa-dev libegl1-mesa-dev libglew-dev  # Install Eigen & OpenGL libraries
+# Install Eigen 3.3, OpenCV 4, Pybind11, and OpenGL (e.g. via apt)
+(sudo) apt install libeigen3-dev libopencv-dev pybind11-dev libgl1-mesa-dev libglu1-mesa-dev libegl1-mesa-dev libglew-dev
 pip install griffig
 ```
 Of course, a NVIDIA GPU with corresponding CUDA version is highly recommended. When building from source, you can either call `pip install .` or use CMake to build Griffig. We also provide a Docker container to get started more easily.
@@ -181,11 +182,12 @@ The robot should have grasped something! If something went wrong, make sure to c
 
 ## Development
 
-Griffig is written in C++17 and Python 3.7 (or higher). It is tested against following dependency versions:
+Griffig is written in C++17 and Python 3.7 (or higher). It is tested on Ubuntu 20.04 against following dependency versions:
 
 - OpenCV 4.5
-- TensorFlow 2.4
 - PyBind11 2.6
+- Eigen 3.3.9
+- TensorFlow 2.4
 
 To build the docker image, call `docker build .`.
 
