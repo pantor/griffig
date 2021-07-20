@@ -54,11 +54,11 @@ class CMakeBuild(build_ext):
             '-DCMAKE_ARCHIVE_OUTPUT_DIRECTORY=' + extdir,
             '-DCMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE=' + extdir,
             '-DCMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE=' + extdir,
-            f'-DPYTHON3_VERSION={sys.version_info.major}.{sys.version_info.minor}',
             f'-DPYBIND11_PYTHON_VERSION={sys.version_info.major}.{sys.version_info.minor}',
             '-DCMAKE_BUILD_WITH_INSTALL_RPATH=TRUE',
             '-DCMAKE_INSTALL_RPATH=$ORIGIN',
             '-DCMAKE_BUILD_TYPE=' + build_type,
+            '-DUSE_INTERNAL_PYBIND11=ON',
         ]
 
         if not os.path.exists(self.build_temp):
@@ -69,7 +69,7 @@ class CMakeBuild(build_ext):
 
 setup(
     name='griffig',
-    version='0.0.8',
+    version='0.0.9',
     description='Robotic Manipulation Learned from Imitation and Self-Supervision',
     long_description=long_description,
     long_description_content_type='text/markdown',
