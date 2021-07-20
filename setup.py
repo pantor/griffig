@@ -55,6 +55,7 @@ class CMakeBuild(build_ext):
             '-DCMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE=' + extdir,
             '-DCMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE=' + extdir,
             f'-DPYTHON3_VERSION={sys.version_info.major}.{sys.version_info.minor}',
+            f'-DPYBIND11_PYTHON_VERSION={sys.version_info.major}.{sys.version_info.minor}',
             '-DCMAKE_BUILD_WITH_INSTALL_RPATH=TRUE',
             '-DCMAKE_INSTALL_RPATH=$ORIGIN',
             '-DCMAKE_BUILD_TYPE=' + build_type,
