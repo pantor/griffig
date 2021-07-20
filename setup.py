@@ -91,8 +91,8 @@ setup(
     setup_requires=[
         'setuptools>=18.0',
         'numpy',
-        'some-pkg @ git+https://github.com/pybind/pybind.git@3.3.9#egg=some-pkg',
-        'some-pkg @ git+https://gitlab.com/libeigen/eigen.git@v2.6.2#egg=some-pkg',
+        'some-pkg @ git+https://github.com/pybind/pybind.git@v2.6.2#egg=some-pkg',
+        'some-pkg @ git+https://gitlab.com/libeigen/eigen.git@3.3.9#egg=some-pkg',
         'some-pkg @ git+https://github.com/opencv/opencv.git@4.5.2#egg=some-pkg',
     ],
     install_requires=[
