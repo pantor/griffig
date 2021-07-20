@@ -5,12 +5,12 @@ project(griffig VERSION 0.0.5 LANGUAGES CXX)
 include(FetchContent)
 
 
-find_package(Eigen3 3.3 REQUIRED)
+find_package(Eigen3 REQUIRED)
 find_package(GLEW REQUIRED)
-find_package(OpenCV 4 REQUIRED COMPONENTS core imgproc)
+find_package(OpenCV REQUIRED COMPONENTS core imgproc)
 find_package(OpenGL REQUIRED COMPONENTS EGL)
 find_package(Python3 REQUIRED COMPONENTS NumPy)
-find_package(pybind11 2.6 REQUIRED)
+find_package(pybind11 REQUIRED)
 
 
 add_subdirectory(affx)
