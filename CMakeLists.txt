@@ -13,8 +13,6 @@ else()
     find_package(Python3 REQUIRED COMPONENTS NumPy)
 endif()
 
-message(${CMAKE_CURRENT_SOURCE_DIR})
-
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/pybind11)
     add_subdirectory(pybind11)
 else()
