@@ -1,6 +1,8 @@
+# Fix repair wheel (pip to find OpenCV libraries for bundling)
+# export LD_LIBRARY_PATH=/usr/local/lib64  # ${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
+
 # Fix Cmake find *.so.0
 ln -s /usr/lib64/libOpenGL.so.0 /usr/lib64/libOpenGL.so
-export LD_LIBRARY_PATH=/usr/local/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
 
 # Fix CMake find Numpy
 python3.9 -m pip install --no-cache-dir numpy
@@ -31,12 +33,7 @@ git clone https://github.com/opencv/opencv.git
 cd opencv
 git checkout 4.5.2
 mkdir build && cd build
-cmake -DWITH_VTK=OFF -DWITH_GTK=OFF -DWITH_PROTOBUF=OFF -DBUILD_PERF_TESTS=OFF -DBUILD_TESTS=OFF -DWITH_WEBP=OFF -DBUILD_opencv_ml=OFF -DBUILD_opencv_calib3d=OFF -DBUILD_opencv_videoio=OFF -DBUILD_opencv_gapi=OFF -DBUILD_opencv_stitching=OFF -DBUILD_opencv_objdetect=OFF -DBUILD_opencv_flann=OFF -DBUILD_opencv_video=OFF -DBUILD_opencv_features2d=OFF ..
+cmake -DCMAKE_INSTALL_PREFIX=/usr -DWITH_VTK=OFF -DWITH_GTK=OFF -DWITH_PROTOBUF=OFF -DBUILD_PERF_TESTS=OFF -DBUILD_TESTS=OFF -DWITH_WEBP=OFF -DBUILD_opencv_ml=OFF -DBUILD_opencv_calib3d=OFF -DBUILD_opencv_videoio=OFF -DBUILD_opencv_gapi=OFF -DBUILD_opencv_stitching=OFF -DBUILD_opencv_objdetect=OFF -DBUILD_opencv_flann=OFF -DBUILD_opencv_video=OFF -DBUILD_opencv_features2d=OFF ..
 make -j2
 make install
 cd ../../
-
-# ls /usr/lib
-# ls /usr/lib64
-# ls /usr/local/lib
-ls /usr/local/lib64
