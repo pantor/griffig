@@ -24,7 +24,6 @@ jobs:
 
     - name: Build source wheels
       run: |
-        mkdir dist
         python3 setup.py sdist
 
     - name: Build manylinux wheels
@@ -40,5 +39,5 @@ jobs:
         TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
         TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
       run: |
-        twine upload dist/*
+        twine upload dist/*-manylinux*.whl
         twine upload wheelhouse/*-manylinux*.whl
