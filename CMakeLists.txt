@@ -5,24 +5,12 @@ project(griffig VERSION 0.0.5 LANGUAGES CXX)
 include(FetchContent)
 
 
-find_package(Eigen3 REQUIRED)
+find_package(Eigen3 3.3 REQUIRED)
 find_package(GLEW REQUIRED)
+find_package(OpenCV 4 REQUIRED COMPONENTS core imgproc)
 find_package(OpenGL REQUIRED COMPONENTS EGL)
 find_package(Python3 REQUIRED COMPONENTS NumPy)
-
-
-find_package(pybind11 2.6 QUIET)
-if(NOT pybind11_FOUND)
-    FetchContent_Declare(pybind11 GIT_REPOSITORY https://github.com/pybind/pybind11.git GIT_TAG v2.6.2)
-    FetchContent_MakeAvailable(pybind11)
-endif()
-
-
-find_package(OpenCV QUIET COMPONENTS core imgproc)
-if(NOT OpenCV_FOUND)
-    FetchContent_Declare(opencv GIT_REPOSITORY https://github.com/opencv/opencv.git GIT_TAG 4.5.2)
-    FetchContent_MakeAvailable(opencv)
-endif()
+find_package(pybind11 2.6 REQUIRED)
 
 
 add_subdirectory(affx)
