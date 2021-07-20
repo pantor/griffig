@@ -10,21 +10,21 @@ find_package(OpenGL REQUIRED COMPONENTS EGL)
 find_package(Python3 REQUIRED COMPONENTS NumPy)
 
 
-find_package(Eigen3)
+find_package(Eigen3 QUIET)
 if(NOT Eigen3_FOUND)
     FetchContent_Declare(eigen GIT_REPOSITORY https://gitlab.com/libeigen/eigen.git GIT_TAG 3.3.9)
     FetchContent_MakeAvailable(eigen)
 endif()
 
 
-find_package(pybind11 2.6)
+find_package(pybind11 2.6 QUIET)
 if(NOT pybind11_FOUND)
     FetchContent_Declare(pybind11 GIT_REPOSITORY https://github.com/pybind/pybind11.git GIT_TAG v2.6.2)
     FetchContent_MakeAvailable(pybind11)
 endif()
 
 
-find_package(OpenCV COMPONENTS core imgproc)
+find_package(OpenCV QUIET COMPONENTS core imgproc)
 if(NOT OpenCV_FOUND)
     FetchContent_Declare(opencv GIT_REPOSITORY https://github.com/opencv/opencv.git GIT_TAG 4.5.2)
     FetchContent_MakeAvailable(opencv)
