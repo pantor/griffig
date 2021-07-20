@@ -21,21 +21,24 @@ jobs:
       run: |
         python3 -m pip install --upgrade pip
         python3 -m pip install setuptools wheel twine --upgrade
-        mkdir dist
 
-    # - name: Build manylinux wheels
-    #   uses: RalfG/python-wheels-manylinux-build@v0.3.4
-    #   with:
-    #     python-versions: 'cp36-cp36m cp37-cp37m cp38-cp38 cp39-cp39'
-    #     build-requirements: 'numpy'
-    #     system-packages: 'cmake libglvnd-opengl mesa-libGL mesa-libGL-devel mesa-libGLU mesa-libGLU-devel mesa-libEGL mesa-libEGL-devel glew glew-devel'
-    #     pre-build-command: 'sh .github/workflows/install-base.sh'
+    - name: Build source wheels
+      run: |
+        mkdir dist
+        python3 setup.py sdist
+
+    - name: Build manylinux wheels
+      uses: RalfG/python-wheels-manylinux-build@v0.3.4
+      with:
+        python-versions: 'cp36-cp36m cp37-cp37m cp38-cp38 cp39-cp39'
+        build-requirements: 'numpy'
+        system-packages: 'cmake libglvnd-opengl mesa-libGL mesa-libGL-devel mesa-libGLU mesa-libGLU-devel mesa-libEGL mesa-libEGL-devel glew glew-devel'
+        pre-build-command: 'sh .github/workflows/install-base.sh'
 
     - name: Publish
       env:
         TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
         TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
       run: |
-        python3 setup.py sdist
-    #    twine upload dist/*
-    #    twine upload wheelhouse/*-manylinux*.whl
+        twine upload dist/*
+        twine upload wheelhouse/*-manylinux*.whl
