@@ -1,20 +1,14 @@
 cmake_minimum_required(VERSION 3.14)
 
 
-project(griffig VERSION 0.0.1 LANGUAGES CXX)
+project(griffig VERSION 0.0.5 LANGUAGES CXX)
 include(FetchContent)
 
 
+find_package(Eigen3 REQUIRED)
 find_package(GLEW REQUIRED)
 find_package(OpenGL REQUIRED COMPONENTS EGL)
 find_package(Python3 REQUIRED COMPONENTS NumPy)
-
-
-find_package(Eigen3 QUIET)
-if(NOT Eigen3_FOUND)
-    FetchContent_Declare(eigen GIT_REPOSITORY https://gitlab.com/libeigen/eigen.git GIT_TAG 3.3.9)
-    FetchContent_MakeAvailable(eigen)
-endif()
 
 
 find_package(pybind11 2.6 QUIET)
