@@ -1,3 +1,4 @@
+from distutils.version import LooseVersion
 import os
 import re
 import subprocess
@@ -5,7 +6,6 @@ import sys
 
 from setuptools import setup, Extension, find_packages
 from setuptools.command.build_ext import build_ext
-from distutils.version import LooseVersion
 
 
 with open('README.md', 'r') as readme_file:
@@ -69,7 +69,7 @@ class CMakeBuild(build_ext):
 
 setup(
     name='griffig',
-    version='0.0.3',
+    version='0.0.4',
     description='Robotic Manipulation Learned from Imitation and Self-Supervision',
     long_description=long_description,
     long_description_content_type='text/markdown',
@@ -89,16 +89,18 @@ setup(
         'Programming Language :: C++',
     ],
     setup_requires=[
-        # Setuptools 18.0 properly handles Cython extensions.
         'setuptools>=18.0',
         'numpy',
+        'some-pkg @ git+https://github.com/pybind/pybind.git@3.3.9#egg=some-pkg',
+        'some-pkg @ git+https://gitlab.com/libeigen/eigen.git@v2.6.2#egg=some-pkg',
+        'some-pkg @ git+https://github.com/opencv/opencv.git@4.5.2#egg=some-pkg',
     ],
     install_requires=[
         'loguru',
-        'tensorflow==2.4',
+        'tensorflow>=2.4',
         'opencv-python',
         'numpy',
-        'scipy==1.5',
+        'scipy>=1.5',
         'Pillow',
     ],
     python_requires='>=3.6',
