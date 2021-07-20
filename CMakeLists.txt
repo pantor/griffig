@@ -13,16 +13,18 @@ else()
     find_package(Python3 REQUIRED COMPONENTS NumPy)
 endif()
 
-find_package(Eigen3 REQUIRED)
-find_package(GLEW REQUIRED)
-find_package(OpenCV REQUIRED COMPONENTS core imgproc)
-find_package(OpenGL REQUIRED COMPONENTS EGL)
+message(${CMAKE_CURRENT_SOURCE_DIR})
 
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/pybind11)
     add_subdirectory(pybind11)
 else()
     find_package(pybind11 2.6 REQUIRED)
 endif()
+
+find_package(Eigen3 REQUIRED)
+find_package(GLEW REQUIRED)
+find_package(OpenCV REQUIRED COMPONENTS core imgproc)
+find_package(OpenGL REQUIRED COMPONENTS EGL)
 
 
 add_subdirectory(affx)
