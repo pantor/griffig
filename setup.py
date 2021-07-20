@@ -81,9 +81,9 @@ setup(
     cmdclass=dict(build_ext=CMakeBuild),
     keywords=['robot', 'robotics', 'grasping', 'robot-learning'],
     classifiers=[
-        'Development Status :: 2 - Pre-Beta',
+        'Development Status :: 3 - Alpha',
         'Intended Audience :: Science/Research',
-        'Topic :: Software Development :: Build Tools',
+        'Topic :: Scientific/Engineering',
         'License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)',
         'Programming Language :: C++',
     ],
