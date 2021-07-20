@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.14)
 
 
-project(griffig VERSION 0.0.7 LANGUAGES CXX)
+project(griffig VERSION 0.0.8 LANGUAGES CXX)
 include(FetchContent)
 
 
