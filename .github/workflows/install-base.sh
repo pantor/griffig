@@ -1,6 +1,3 @@
-# Fix repair wheel (pip to find OpenCV libraries for bundling)
-# export LD_LIBRARY_PATH=/usr/local/lib64  # ${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
-
 # Fix Cmake find *.so.0
 ln -s /usr/lib64/libOpenGL.so.0 /usr/lib64/libOpenGL.so
 

@@ -6,6 +6,7 @@ project(griffig VERSION 0.0.1 LANGUAGES CXX)
 
 set(PYTHON3_VERSION "" CACHE STRING "Python Version")
 
+
 if (PYTHON3_VERSION)
     find_package(Python3 ${PYTHON3_VERSION} EXACT REQUIRED COMPONENTS NumPy)
 else()
