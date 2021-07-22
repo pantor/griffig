@@ -18,7 +18,7 @@
   </a>
 
   <a href="https://github.com/pantor/griffig/blob/master/LICENSE">
-    <img src="https://img.shields.io/badge/license-LGPL-green.svg" alt="LGPL">
+    <img src="https://img.shields.io/badge/license-MIT-green.svg" alt="MIT">
   </a>
 </p>
 
@@ -194,4 +194,4 @@ To build the docker image, call `docker build .`.
 
 ## License
 
-Griffig is licensed under LGPL for non-commercial usage. Please contact us in case of commercial interest.
+Griffig is published under the permissive MIT license. Feel free to contact us in case of commercial interest.

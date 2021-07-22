@@ -77,7 +77,7 @@ setup(
     author_email='lars.berscheid@kit.edu',
     url='https://github.com/pantor/griffig',
     packages=find_packages(),
-    license='LGPL',
+    license='MIT',
     ext_modules=[CMakeExtension('_griffig'), CMakeExtension('pyaffx')],
     cmdclass=dict(build_ext=CMakeBuild),
     keywords=['robot', 'robotics', 'grasping', 'robot-learning'],
