@@ -42,7 +42,7 @@ Of course, a NVIDIA GPU with corresponding CUDA version is highly recommended. W
 
 We focused on making *Griffig* easy to use! In this tutorial, we use a RGBD pointcloud of the scene to detect a 6D grasp point with an additional pre-shaped gripper stroke. We use a common parallel two-finger gripper and a RealSense D435 camera for recording. Griffig includes a small library of pre-trained models. As with all data-driven methods, make sure to match our robotic system as much as possible. The main output of Griffig is a *grasp point*. Then, the robot should move its gripper to a pre-shaped position and approach the point along a trajectory parallel to its gripper fingers. Be careful of possible collisions that might always happen in bin picking.
 
-[<div align="center"><img width="540" src="https://raw.githubusercontent.com/pantor/griffig/master/doc/input.jpeg"></div>](https://griffig.xyz/dataset/viewer)
+[<div align="center"><img width="600" src="https://raw.githubusercontent.com/pantor/griffig/master/doc/input.jpeg"></div>](https://griffig.xyz/dataset/viewer)
 
 A typical scene looks like the color (left) and depth (right) images above. The (orthographic) images are rendered from pointclouds, and show the bin randomly filled with objects of multiple types. Now, we want to find the *best* grasp within the bin. You can find working examples in the corresponding [directory](). At first, we need to import `griffig`, generate a pointcloud, and create the main `Griffig` instance.
 
