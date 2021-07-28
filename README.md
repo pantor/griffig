@@ -26,23 +26,27 @@ Griffig is a library (in particular) for 6D robotic grasping, learned from large
 
 [<div align="center"><img width="460" src="https://raw.githubusercontent.com/pantor/griffig/master/doc/systemnew-sm.JPG"></div>](https://griffig.xyz)
 
+<p align="center">
+  You can find many videos on <a href="https://griffig.xyz">griffig.xyz</a>!
+</p>
 
 ## Installation
 
-Griffig is a library for Python 3.7+, wrapping a core written in C++17. You can install Griffig via [PyPI](https://pypi.org/project/griffig/)
+Griffig is a library for Python 3.7+. You can install Griffig via [PyPI](https://pypi.org/project/griffig/) by
 ```bash
 # Install Eigen >3.3, OpenCV >3, and OpenGL (e.g. via apt)
 (sudo) apt install libeigen3-dev libopencv-dev libgl1-mesa-dev libglu1-mesa-dev libegl1-mesa-dev libglew-dev
+
 pip install griffig
 ```
-Of course, a NVIDIA GPU with corresponding CUDA version is highly recommended. When building from source, you can either call `pip install .` or use CMake to build Griffig. We also provide a Docker container to get started more easily.
+Of course, a NVIDIA GPU with corresponding CUDA version is highly recommended. When building from source, you can either call `pip install .` or use CMake directly to build the C++ core of Griffig. We also provide a Docker container to get started more easily.
 
 
 ## Tutorial
 
 We focused on making *Griffig* easy to use! In this tutorial, we use a RGBD pointcloud of the scene to detect a 6D grasp point with an additional pre-shaped gripper stroke. We use a common parallel two-finger gripper and a RealSense D435 camera for recording. Griffig includes a small library of pre-trained models. As with all data-driven methods, make sure to match our robotic system as much as possible. The main output of Griffig is a *grasp point*. Then, the robot should move its gripper to a pre-shaped position and approach the point along a trajectory parallel to its gripper fingers. Be careful of possible collisions that might always happen in bin picking.
 
-[<div align="center"><img width="740" src="https://raw.githubusercontent.com/pantor/griffig/master/doc/input.jpeg"></div>](https://griffig.xyz/dataset/viewer)
+[<div align="center"><img width="760" src="https://raw.githubusercontent.com/pantor/griffig/master/doc/input.jpeg"></div>](https://griffig.xyz/dataset/viewer)
 
 A typical scene looks like the color (left) and depth (right) images above. The (orthographic) images are rendered from pointclouds, and show the bin randomly filled with objects of multiple types. Now, we want to find the *best* grasp within the bin. You can find working examples in the corresponding [directory](). At first, we need to import `griffig`, generate a pointcloud, and create the main `Griffig` instance.
 
@@ -70,7 +74,7 @@ grasp = griffig.calculate_grasp(pointcloud, camera_pose=camera_pose)
 # Make use of the grasp here!
 print(f'Grasp at {grasp.pose} with probability {grasp.estimated_reward})
 ```
-The grasp pose is given as an [Affx](https://github.com/pantor/affx) affine, which is a very light wrapper around [Eigens](https://eigen.tuxfamily.org) `Affine3d` class. On top, we can easily generate a Heatmap of grasp probabilities as a PIL image to visualize our model.
+The grasp pose is given as an [Affx](https://github.com/pantor/affx) affine, which is a very light wrapper around [Eigen's](https://eigen.tuxfamily.org) `Affine3d` class. On top, we can easily generate a heatmap of grasp probabilities as a PIL image to visualize our model.
 
 ```python
 heatmap = griffig.calculate_heatmap()
@@ -82,7 +86,7 @@ Furthermore, we show the usage of the *Griffig* library in a few more details.
 
 ### BoxData Class
 
-We can define a box to avoid grasps outside of the bin (and even worse: grasps of the bin itself). A box can be constructed by its contour given as a polygon. To construct a cubic box, we can simplify this by calling
+We can define a box to avoid grasps outside of the bin (and even worse: grasps of the bin itself). A box can be constructed by its contour given as a polygon in the image frame. To construct a cubic box, we've simplify this method by
 
 ```python
 box_data = BoxData(
@@ -95,7 +99,7 @@ with the size and center position of the box.
 
 ### Gripper Class
 
-We use the gripper class for collision checks.
+We use the gripper class for collision checks and to specify the minimum and maximum gripper stroke
 
 ```python
 gripper = Gripper(  # Everything in [m]
@@ -124,12 +128,12 @@ griffig = Griffig(
 )
 ```
 
-Griffig includes a small model library for different tasks / gripper and downloads them automatically. You can find the complete list at [griffig.xyz](https://griffig.xyz/model-library).
+Griffig includes a [model library](https://griffig.xyz/model-library) for different tasks and downloads them automatically.
 
 
 ### Pointcloud Class
 
-Griffig uses its own Pointcloud class as input to its rendering pipeline. It only stores the pointer to the data, but doesn't hold anything. Currently, three possible inputs are supported:
+Griffig uses its own pointcloud class as input to its rendering pipeline. Currently, three possible inputs are supported:
 
 ```python
 # (1) Input from a realsense frame
@@ -145,10 +149,12 @@ pointcloud = Pointcloud(type=PointType.XYZRGB, data=cloud_data.ptr())
 image = griffig.render(pointcloud)
 image.show()
 ```
+Note that the pointcloud does only store the pointer to the data, but doesn't hold anything.
+
 
 ### Grasp Class
 
-The calculated grasp contains - of course - information about its grasp pose, but also some more details. At first, we calculate the grasp from the `griffig` instance and the current pointcloud input.
+The calculated grasp contains - of course - information about its grasp pose, but also some more details. At first, we calculate the next grasp based on the current pointcloud input.
 
 ```python
 grasp = griffig.calculate_grasp(pointcloud, camera_pose=camera_pose)  # Get grasp in the global frame using the camera pose
@@ -159,21 +165,22 @@ print(f'Calculated grasp {grasp} in {grasp.calculation_duration} [ms].')  # Calc
 If using a GPU, the grasp calculation should not take longer than a few 100ms, and most probably below 70ms! Then, a typical grasp pipeline would look like this:
 
 ```python
+# (1) Check if the grasp reward is below a user-defined threshold
 if grasp.estimated_reward < 0.2:  # Grasp probability in [0, 1]
     print('The bin is probably empty!')
 
 approach_start = grasp.pose * Affine(z=-0.12)  # Approx. finger length [m]
 
-# (1) Move robot to start of approach trajectory
+# (2) Move robot to start of approach trajectory
 robot.move_linear(approach_start)
 
-# (2) Move gripper to pre-shaped grasp stroke
+# (3) Move gripper to pre-shaped grasp stroke
 robot.move_gripper(grasp.pose.d)
 
-# (3) Move robot to actual grasp pose
+# (4) Move robot to actual grasp pose
 robot_move_linear(grasp.pose)
 
-# (4) And finally close the gripper
+# (5) And finally close the gripper
 robot.close_gripper()
 ```
 
