@@ -29,8 +29,8 @@ class CMakeBuild(build_ext):
             ) from err
 
         cmake_version = LooseVersion(re.search(r'version\s*([\d.]+)', out.decode()).group(1))
-        if cmake_version < LooseVersion('3.11.0'):
-            raise RuntimeError('CMake >= 3.11.0 is required')
+        if cmake_version < LooseVersion('3.14.0'):
+            raise RuntimeError('CMake >= 3.14.0 is required')
 
         for ext in self.extensions:
             self.build_extension(ext)
@@ -90,6 +90,7 @@ setup(
     ],
     setup_requires=[
         'setuptools>=18.0',
+        'cmake>=3.14',
         'numpy',
     ],
     install_requires=[

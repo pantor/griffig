@@ -3,7 +3,7 @@ requires-python = ">=3.6"
 
 
 [build-system]
-requires = ["setuptools>=42", "wheel", "oldest-supported-numpy"]
+requires = ["setuptools>=42", "wheel", "cmake>=3.14", "oldest-supported-numpy"]
 build-backend = "setuptools.build_meta"
 
 
