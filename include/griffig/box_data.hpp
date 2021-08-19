@@ -65,4 +65,12 @@ struct BoxData {
 
         return jaw1_inside_box && jaw2_inside_box && start_point_inside_box;
     }
+
+    std::string toString() const {
+        std::string result = "Box contour (";
+        for (auto e: contour) {
+            result += "(" + std::to_string(e[0]) + ", " + std::to_string(e[1]) + ", " + std::to_string(e[2]) + ")";
+        }
+        return result + ")";
+    }
 };

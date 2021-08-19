@@ -26,7 +26,8 @@ PYBIND11_MODULE(_griffig, m) {
             py::dict d;
             d["contour"] = self.contour;
             return d;
-        });
+        })
+        .def("__repr__", &BoxData::toString);
 
     py::class_<Grasp>(m, "Grasp", py::dynamic_attr())
         .def(py::init<const Affine&, double, size_t, double>(), "pose"_a=Affine(), "stroke"_a=0.0, "index"_a=0, "estimated_reward"_a=0.0)

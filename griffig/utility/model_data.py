@@ -12,6 +12,7 @@ class ModelArchitecture(str, Enum):
     ActorCritic = 'actor-critic'  # Actor-critic
     ModelBasedConvolution = 'model-based-convolution'  # Model-based convolution
     NonFCNActorCritic = 'non-fcn-actor-critic'  # Non-fully-convolutional actor-critic
+    NonFCNPlanar = 'non-fcn-planar'  # Non-fully-convolutional planar
 
 
 class ModelData:
