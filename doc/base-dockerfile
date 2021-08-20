@@ -1,0 +1,38 @@
+FROM tensorflow/tensorflow:2.4.1
+
+ENV TZ=Europe/Berlin
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
+# Install Git (latest version)
+RUN apt-get update && apt-get install -y software-properties-common
+RUN add-apt-repository ppa:git-core/ppa
+RUN apt-get update && apt-get install -y git
+
+# Install Cmake
+RUN python3 -m pip install cmake
+
+# Install OpenCV
+RUN git clone https://github.com/opencv/opencv.git &&\
+    cd opencv &&\
+    git checkout 4.5.2 &&\
+    mkdir build && cd build &&\
+    cmake -DWITH_VTK=OFF -DWITH_GTK=OFF -DWITH_PROTOBUF=OFF -DBUILD_PERF_TESTS=OFF -DBUILD_TESTS=OFF -DWITH_WEBP=OFF .. &&\
+    make &&\
+    make install &&\
+    cd ../../
+
+# Install PyBind11
+RUN git clone https://github.com/pybind/pybind11.git &&\
+    cd pybind11 &&\
+    git checkout v2.6.2 &&\
+    mkdir build && cd build &&\
+    cmake -DPYBIND11_TEST=OFF .. &&\
+    make &&\
+    make install &&\
+    cd ../../
+
+# Install EGL
+RUN apt-get install -y libgl1-mesa-dev libglu1-mesa-dev libgles2-mesa-dev libglew-dev libeigen3-dev
+
+# Install Python3 Numpy C files
+RUN apt-get install -y python3-numpy
