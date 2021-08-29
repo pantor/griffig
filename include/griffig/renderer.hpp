@@ -31,13 +31,13 @@ class Renderer {
     void init_egl(int width, int height) {
         egl_display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
         if (egl_display == EGL_NO_DISPLAY) {
-            std::cout << "display: " << eglGetError() << std::endl;
+            std::cout << "EGL display error: " << eglGetError() << std::endl;
             exit(EXIT_FAILURE);
         }
 
         EGLint major, minor;
         if (!eglInitialize(egl_display, &major, &minor)) {
-            std::cout << "init: " << eglGetError() << std::endl;
+            std::cout << "EGL init error: " << eglGetError() << std::endl;
             exit(EXIT_FAILURE);
         }
 
@@ -51,7 +51,7 @@ class Renderer {
         EGLint numConfigs;
         EGLConfig eglCfg;
         if (!eglChooseConfig(egl_display, configAttribs, NULL, 0, &numConfigs)) {
-            std::cout << "choose config: " << eglGetError() << std::endl;
+            std::cout << "EGL choose config error: " << eglGetError() << std::endl;
             exit(EXIT_FAILURE);
         }
 
@@ -60,18 +60,18 @@ class Renderer {
 
         egl_context = eglCreateContext(egl_display, eglCfg, EGL_NO_CONTEXT, NULL);
         if (egl_context == NULL) {
-            std::cout << "create context: " << eglGetError() << std::endl;
+            std::cout << "EGL create context error: " << eglGetError() << std::endl;
             exit(EXIT_FAILURE);
         }
 
         if (!eglMakeCurrent(egl_display, EGL_NO_SURFACE, EGL_NO_SURFACE, egl_context)) {
-            std::cout << "make current: " << eglGetError() << std::endl;
+            std::cout << "EGL make current display error: " << eglGetError() << std::endl;
             exit(EXIT_FAILURE);
         }
 
         GLenum glewinit = glewInit();
         if (glewinit != GLEW_OK) {
-            std::cout << "glew init: " << glewinit << std::endl;
+            std::cout << "GLEW init error: " << glewinit << std::endl;
             exit(EXIT_FAILURE);
         }
 
