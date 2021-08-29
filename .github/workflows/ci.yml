@@ -20,7 +20,7 @@ jobs:
 
     - name: Build and test
       run: |
-        apt install libegl1-mesa-dev libgles2-mesa-dev libgbm-dev
+        apt install -y libegl1-mesa-dev libgles2-mesa-dev libgbm-dev
         pip install .
         python3 test/test_box.py
         python3 test/test_draw.py
