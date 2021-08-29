@@ -22,3 +22,4 @@ jobs:
       run: |
         pip install .
         python3 test/test_box.py
+        python3 test/test_draw.py
